@@ -2064,8 +2064,24 @@ function moveOfString(str, myState) {
   }
 }
 
-function estimateValue(param) {
-  return Pervasives.failwith("not implenmented yet");
+function estimateValue(inState) {
+  var inPlayer = inState._0;
+  if (typeof inPlayer === "number") {
+    return 0.0;
+  }
+  if (inPlayer.TAG === /* Win */0) {
+    return 0.0;
+  }
+  var inPlayer$1 = inPlayer._0;
+  if (checkWin(inState._1, inPlayer$1)) {
+    if (inPlayer$1) {
+      return -100.0;
+    } else {
+      return 100.0;
+    }
+  } else {
+    return 0.0;
+  }
 }
 
 var Connect4 = {

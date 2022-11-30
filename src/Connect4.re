@@ -641,9 +641,22 @@ module Connect4 = {
         failwith("error: illegal move");
       };
     };
+  
   let estimateValue: state => float =
-    fun
-    | _ => failwith("not implenmented yet");
+    inState =>
+      switch (inState) {
+      | State(Ongoing(inPlayer), inMatrix) =>
+        if (checkWin(inMatrix, inPlayer)) {
+          // one of the player win
+          switch (inPlayer) {
+          | P1 => 100.0
+          | P2 => (-100.0)
+          };
+        } else {
+          0.0; // TO DO:
+        }
+      | _ => 0.0
+      };
   // TO DO
 };
 

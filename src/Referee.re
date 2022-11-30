@@ -49,12 +49,20 @@ module R1 =
     (AIPlayer.AIPlayer(Connect4.Connect4)),
   );
 
-module R2 =
+module R2Human2Human =
   Referee(
     Connect4.Connect4,
     (HumanPlayer.HumanPlayer(Connect4.Connect4)),
     (HumanPlayer.HumanPlayer(Connect4.Connect4)),
   );
 
+module R3Human2AI =
+  Referee(
+    Connect4.Connect4,
+    (HumanPlayer.HumanPlayer(Connect4.Connect4)),
+    (AIPlayer.AIPlayer(Connect4.Connect4)),
+  );
+
 // R1.playGame();
-R2.playGame();
+// R2Human2Human.playGame();
+R3Human2AI.playGame();

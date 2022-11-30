@@ -193,7 +193,7 @@ var $$let$1 = HumanPlayer$Game_project.HumanPlayer({
       estimateValue: Connect4$Game_project.Connect4.estimateValue
     });
 
-var R2 = (function (param) {
+var R2Human2Human = (function (param) {
       var playGame = function (param$1) {
         try {
           var _s = Curry._1(partial_arg_initialState$1, "5 6");
@@ -236,9 +236,103 @@ var R2 = (function (param) {
       playerName: $$let$1.playerName
     });
 
-Curry._1(R2.playGame, undefined);
+var $$let$2 = HumanPlayer$Game_project.HumanPlayer({
+      stringOfPlayer: Connect4$Game_project.Connect4.stringOfPlayer,
+      stringOfState: Connect4$Game_project.Connect4.stringOfState,
+      stringOfMove: Connect4$Game_project.Connect4.stringOfMove,
+      initialState: Connect4$Game_project.Connect4.initialState,
+      legalMoves: Connect4$Game_project.Connect4.legalMoves,
+      gameStatus: Connect4$Game_project.Connect4.gameStatus,
+      nextState: Connect4$Game_project.Connect4.nextState,
+      moveOfString: Connect4$Game_project.Connect4.moveOfString,
+      estimateValue: Connect4$Game_project.Connect4.estimateValue
+    });
+
+var partial_arg_nextMove$1 = $$let$2.nextMove;
+
+var partial_arg_stringOfPlayer$2 = Connect4$Game_project.Connect4.stringOfPlayer;
+
+var partial_arg_stringOfState$2 = Connect4$Game_project.Connect4.stringOfState;
+
+var partial_arg_stringOfMove$2 = Connect4$Game_project.Connect4.stringOfMove;
+
+var partial_arg_initialState$2 = Connect4$Game_project.Connect4.initialState;
+
+var partial_arg_legalMoves$2 = Connect4$Game_project.Connect4.legalMoves;
+
+var partial_arg_gameStatus$2 = Connect4$Game_project.Connect4.gameStatus;
+
+var partial_arg_nextState$2 = Connect4$Game_project.Connect4.nextState;
+
+var partial_arg_moveOfString$2 = Connect4$Game_project.Connect4.moveOfString;
+
+var partial_arg_estimateValue$2 = Connect4$Game_project.Connect4.estimateValue;
+
+var partial_arg$3 = {
+  stringOfPlayer: partial_arg_stringOfPlayer$2,
+  stringOfState: partial_arg_stringOfState$2,
+  stringOfMove: partial_arg_stringOfMove$2,
+  initialState: partial_arg_initialState$2,
+  legalMoves: partial_arg_legalMoves$2,
+  gameStatus: partial_arg_gameStatus$2,
+  nextState: partial_arg_nextState$2,
+  moveOfString: partial_arg_moveOfString$2,
+  estimateValue: partial_arg_estimateValue$2
+};
+
+var R3Human2AI = (function (param) {
+      var playGame = function (param$1) {
+        try {
+          var _s = Curry._1(partial_arg_initialState$2, "5 6");
+          while(true) {
+            var s = _s;
+            console.log(Curry._1(partial_arg_stringOfState$2, s));
+            var player = Curry._1(partial_arg_gameStatus$2, s);
+            if (typeof player === "number") {
+              console.log("Draw...");
+              return ;
+            }
+            if (player.TAG === /* Win */0) {
+              console.log(Curry._1(partial_arg_stringOfPlayer$2, player._0) + " wins!");
+              return ;
+            }
+            var player$1 = player._0;
+            console.log(Curry._1(partial_arg_stringOfPlayer$2, player$1) + "'s turn.");
+            var theMove = player$1 ? Curry._1(param.nextMove, s) : Curry._1(partial_arg_nextMove$1, s);
+            console.log(Curry._1(partial_arg_stringOfPlayer$2, player$1) + (" makes the move " + Curry._1(partial_arg_stringOfMove$2, theMove)));
+            _s = Curry._2(partial_arg_nextState$2, s, theMove);
+            continue ;
+          };
+        }
+        catch (raw_message){
+          var message = Caml_js_exceptions.internalToOCamlException(raw_message);
+          if (message.RE_EXN_ID === "Failure") {
+            console.log(message._1);
+            return ;
+          }
+          throw message;
+        }
+      };
+      return {
+              CurrentGame: partial_arg$3,
+              playGame: playGame
+            };
+    })(AIPlayer$Game_project.AIPlayer({
+          stringOfPlayer: Connect4$Game_project.Connect4.stringOfPlayer,
+          stringOfState: Connect4$Game_project.Connect4.stringOfState,
+          stringOfMove: Connect4$Game_project.Connect4.stringOfMove,
+          initialState: Connect4$Game_project.Connect4.initialState,
+          legalMoves: Connect4$Game_project.Connect4.legalMoves,
+          gameStatus: Connect4$Game_project.Connect4.gameStatus,
+          nextState: Connect4$Game_project.Connect4.nextState,
+          moveOfString: Connect4$Game_project.Connect4.moveOfString,
+          estimateValue: Connect4$Game_project.Connect4.estimateValue
+        }));
+
+Curry._1(R3Human2AI.playGame, undefined);
 
 exports.Referee = Referee;
 exports.R1 = R1;
-exports.R2 = R2;
+exports.R2Human2Human = R2Human2Human;
+exports.R3Human2AI = R3Human2AI;
 /* R1 Not a pure module */
