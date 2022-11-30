@@ -18,13 +18,17 @@ module Connect4 = {
     | Red
     | Yellow
     | None;
+  /* stringOfPlace:
+   * Input: place, Red or Yellow or None
+   * Output: corroesponding string of each place
+   */
   let stringOfPlace =
     fun
     | Red => "\027[31m--Red---\027[0m"
     | Yellow => "\027[33m-Yellow-\027[0m"
     | None => "\027[32m--None--\027[0m";
-  type matrix = list(list(place)); //int; new type
-  // matrix pro
+  type matrix = list(list(place));
+  // matrix proc
   let horzFlip: matrix => matrix = matrixIn => List.rev(matrixIn);
   let rec transpose: matrix => matrix =
     matrixIn =>
@@ -36,11 +40,16 @@ module Connect4 = {
       | [[hd], ..._] => [List.flatten(matrixIn)]
       /* recursive case: list of longer lists.
          I found myself hard to use the 'hd' 'tl', and I used List.hd List.tl instead in lambda :(*/
-      | [[hd, ...tl], ..._] => [
+      | [[_, ..._], ..._] => [
           List.map(elelst => List.hd(elelst), matrixIn),
           ...transpose(List.map(elelst => List.tl(elelst), matrixIn)),
         ]
       };
+  checkExpect(
+    transpose([[Red, Red], [Yellow, Yellow], [None, None]]),
+    [[Red, Yellow, None], [Red, Yellow, None]],
+    "testing for transposing a matrix",
+  );
   let rec mainDiagonal: matrix => list('a) =
     inMatrix =>
       switch (inMatrix) {
@@ -52,7 +61,10 @@ module Connect4 = {
         ]
       | _ => failwith("error_mainDiagonal")
       };
-
+  /* halfNW2SEDiagonal:
+   * Input: inMatrix, a matrix
+   * Output: the diagonal list from NW to SE, but only the half of the matrix
+   */
   let rec halfNW2SEDiagonal: matrix => matrix =
     inMatrix =>
       switch (inMatrix) {
@@ -63,13 +75,17 @@ module Connect4 = {
         ]
       | _ => failwith("error_halfNW2SEDiagonal")
       };
-
+  /* hallDiagonal:
+   * Input: inMatrix, a matrix
+   * Output: the diagonal list in all conditions
+   */
   let allDiagonal: matrix => matrix =
     inMatrix =>
       halfNW2SEDiagonal(inMatrix)
       @ halfNW2SEDiagonal(transpose(inMatrix))
       @ halfNW2SEDiagonal(horzFlip(inMatrix))
       @ halfNW2SEDiagonal(transpose(horzFlip(inMatrix)));
+
   type state =
     | State(status, matrix);
 
@@ -105,7 +121,6 @@ module Connect4 = {
         "",
       );
   };
-
   let stringOfState: state => string =
     fun
     | State(inStatus, inMatrix) =>
@@ -123,12 +138,13 @@ module Connect4 = {
   let stringOfMove: move => string =
     fun
     | Move(inNum) =>
-      "The player move in No." ++ string_of_int(inNum) ++ " column";
+      "The player move in No." ++ string_of_int(inNum + 1) ++ " column";
 
   let otherPlayer: whichPlayer => whichPlayer =
     fun
     | P1 => P2
     | P2 => P1;
+
   let initialState: string => state =
     s => {
       let boardDims = parseBoardDims(s);
@@ -192,7 +208,10 @@ module Connect4 = {
       let State(p, _) = inState;
       p;
     };
-
+  /* findNReplaceLastNoneInAColumn:
+   * Input: alop, inplayer. a column, aka a list of place, and a player
+   * Output: a column, aka a list of place, but the last None was replaced
+   */
   let rec findNReplaceLastNoneInAColumn:
     (list(place), whichPlayer) => list(place) =
     (alop, inplayer) =>
@@ -208,6 +227,214 @@ module Connect4 = {
         }
       | ([], _) => failwith("error: init matrix error. No empty matrix")
       };
+  /* Testing Case: findNReplaceLastNoneInAColumn */
+  checkExpect(
+    findNReplaceLastNoneInAColumn([None, None, Red], P1),
+    [None, Red, Red],
+    "check for findNReplaceLastNoneInAColumn 01",
+  );
+  checkExpect(
+    findNReplaceLastNoneInAColumn([None, None, Red], P2),
+    [None, Yellow, Red],
+    "check for findNReplaceLastNoneInAColumn 02",
+  );
+  checkExpect(
+    findNReplaceLastNoneInAColumn([None, None, None], P1),
+    [None, None, Red],
+    "check for findNReplaceLastNoneInAColumn 03",
+  );
+  /* isCloneList:
+   * Input: aloa. any kind of list
+   * Output: bool. if all the elements in the list are same, then true. else, false
+   */
+  let rec isCloneList: list('a) => bool =
+    fun
+    | []
+    | [_] => false
+    | [hd0, hd1] => hd0 == hd1
+    | [hd0, hd1, ...tl] => hd0 == hd1 && isCloneList([hd1, ...tl]);
+  /*Testing Case:  isCloneList*/
+  checkExpect(isCloneList([1, 1, 1, 1]), true, "check for isCloneList 01");
+  checkExpect(isCloneList([1, 1, 0, 1]), false, "check for isCloneList 02");
+  /* isChainInAColumn:
+   * Input: (inColumn, inPlace). a list of place and the place(color)
+   * Output: bool. if a chain in certain color was found in the column, then true. Else, false.
+   */
+  let rec isChainInAColumn: (list(place), place) => bool =
+    (inColumn, inPlace) =>
+      switch (inColumn) {
+      | []
+      | [_]
+      | [_, _]
+      | [_, _, _] => false
+      | [color0, _, _, _] => color0 == inPlace && isCloneList(inColumn)
+      // | [Red,Red,Red,Red,...tl] => true
+      | [color0, color1, color2, color3, ..._] =>
+        if (color0 == inPlace) {
+          isCloneList([color0, color1, color2, color3])
+          || isChainInAColumn(List.tl(inColumn), inPlace);
+        } else {
+          isChainInAColumn(List.tl(inColumn), inPlace);
+        }
+      }; // end isChainInAColum
+  /* Testing Case: isChainInAColumn */
+  checkExpect(
+    isChainInAColumn([None, None, None], Red),
+    false,
+    "check for isChainInAColumn",
+  );
+  checkExpect(
+    isChainInAColumn([None, Red, Red, Red, Red], Red),
+    true,
+    "check for isChainInAColumn",
+  );
+  checkExpect(
+    isChainInAColumn([None, Red, Red, Red, Red], Yellow),
+    false,
+    "check for isChainInAColumn",
+  );
+  /* isVerticalChainInAMatrix:
+   * Input: (inMatrix, inplace). a matrix and the place looking for
+   * Output: bool. if a vertical chain in certain color was found in the matrix, then true. Else, false.
+   */
+  let rec isVerticalChainInAMatrix: (matrix, place) => bool =
+    (inMatrix, inplace) =>
+      switch (inMatrix, inplace) {
+      | ([aCol], inplace) => isChainInAColumn(aCol, inplace)
+      | ([colHd, ...coltl], inplace) =>
+        isChainInAColumn(colHd, inplace)
+        || isVerticalChainInAMatrix(coltl, inplace)
+      | _ => failwith("error: isChainInAMatrixRough")
+      };
+  /* Testing Case: isVerticalChainInAMatrix */
+  checkExpect(
+    isVerticalChainInAMatrix(
+      [
+        [None, None, None, None, Red],
+        [None, None, None, None, Red],
+        [None, None, None, None, Red],
+        [None, None, None, None, Red],
+      ],
+      Red,
+    ),
+    false,
+    "check for isVerticalChainInAMatrix",
+  );
+  checkExpect(
+    isVerticalChainInAMatrix(
+      [[None, Red, Red, Red, Red], [None, None, None, None, Red]],
+      Red,
+    ),
+    true,
+    "check for isVerticalChainInAMatrix",
+  );
+  checkExpect(
+    isVerticalChainInAMatrix(
+      [[None, Red, Red, Red, Red], [None, None, None, None, Red]],
+      Yellow,
+    ),
+    false,
+    "check for isVerticalChainInAMatrix",
+  );
+  /* isHorizontalChainInAMatrix:
+   * Input: (matrix, inPlace). a matrix and the place(color)
+   * Output: bool. if a horizontal chain in certain color was found in the column, then true. Else, false.
+   */
+  let isHorizontalChainInAMatrix: (matrix, place) => bool =
+    (inMatrix, inplace) =>
+      isVerticalChainInAMatrix(transpose(inMatrix), inplace);
+  /* Testing Case: isHorizontalChainInAMatrix */
+  checkExpect(
+    isHorizontalChainInAMatrix(
+      [
+        [None, None, None, None, Red],
+        [None, None, None, None, Red],
+        [None, None, None, None, Red],
+        [None, None, None, None, Red],
+      ],
+      Red,
+    ),
+    true,
+    "check for isHorizontalChainInAMatrix 01",
+  );
+  checkExpect(
+    isHorizontalChainInAMatrix(
+      [
+        [None, None, None, None, None],
+        [None, None, None, None, Red],
+        [None, None, None, None, Red],
+        [None, None, None, None, Red],
+      ],
+      Red,
+    ),
+    false,
+    "check for isHorizontalChainInAMatrix 02",
+  );
+  checkExpect(
+    isHorizontalChainInAMatrix(
+      [
+        [None, None, None, None, None],
+        [None, None, None, None, Yellow],
+        [None, None, None, None, Yellow],
+        [None, None, None, None, Red],
+      ],
+      Yellow,
+    ),
+    false,
+    "check for isHorizontalChainInAMatrix 03",
+  );
+
+  let isDiagonalChainInAMatrix: (matrix, place) => bool =
+    (inMatrix, inplace) =>
+      isVerticalChainInAMatrix(allDiagonal(inMatrix), inplace);
+  checkExpect(
+    isDiagonalChainInAMatrix(
+      [
+        [None, Red, Yellow, Yellow, Yellow],
+        [None, None, Red, Yellow, Yellow],
+        [None, None, None, Red, Yellow],
+        [None, None, None, None, Red],
+      ],
+      Red,
+    ),
+    true,
+    "check for isDiagonalChainInAMatrix 01",
+  );
+  checkExpect(
+    isDiagonalChainInAMatrix(
+      [
+        [None, Red, Yellow, Yellow, Yellow],
+        [None, None, Yellow, Yellow, Yellow],
+        [None, None, None, Red, Yellow],
+        [None, None, None, None, Red],
+      ],
+      Red,
+    ),
+    false,
+    "check for isDiagonalChainInAMatrix 02",
+  );
+  checkExpect(
+    isDiagonalChainInAMatrix(
+      [
+        [None, Red, Yellow, Yellow, Red],
+        [None, None, Red, Red, Yellow],
+        [None, None, Red, Yellow, Yellow],
+        [None, Red, Yellow, Yellow, Red],
+      ],
+      Red,
+    ),
+    true,
+    "check for isDiagonalChainInAMatrix 03",
+  );
+
+  let isChainInAMatrix: (matrix, place) => bool =
+    (inMatrix, inplace) =>
+      //vertical chain
+      isVerticalChainInAMatrix(inMatrix, inplace)
+      //horizon chain
+      || isHorizontalChainInAMatrix(inMatrix, inplace)
+      //diagonal chain
+      || isDiagonalChainInAMatrix(inMatrix, inplace);
 
   let rec nextStateHelper: (matrix, int, whichPlayer) => matrix =
     (inMatrix, inNum, whichPlayer) =>
@@ -217,72 +444,142 @@ module Connect4 = {
           findNReplaceLastNoneInAColumn(colHd, inplayer),
           ...colTl,
         ]
-      | ([colHd, ...colTl], num, inplayer) =>
-        [colHd] @ nextStateHelper(colTl, num - 1, inplayer)
+      | ([colHd, ...colTl], num, inplayer) => [
+          colHd,
+          ...nextStateHelper(colTl, num - 1, inplayer),
+        ]
       | _ => failwith("error: nextStateHelper")
       };
-
+  /* Testing Case: nextStateHelper */
+  checkExpect(
+    nextStateHelper([[None, Red], [None, Yellow]], 0, P1),
+    [[Red, Red], [None, Yellow]],
+    "check for nextStateHelper 01",
+  );
+  checkExpect(
+    nextStateHelper([[None, Red], [None, Yellow]], 1, P2),
+    [[None, Red], [Yellow, Yellow]],
+    "check for nextStateHelper 02",
+  );
+  checkExpect(
+    nextStateHelper(
+      [
+        [None, None, Yellow, Red],
+        [None, None, None, None],
+        [None, None, None, None],
+      ],
+      1,
+      P1,
+    ),
+    [
+      [None, None, Yellow, Red],
+      [None, None, None, Red],
+      [None, None, None, None],
+    ],
+    "check for nextStateHelper 03",
+  );
+  let checkWin: (matrix, whichPlayer) => bool =
+    (inMatrix, inPlayer) =>
+      switch (inPlayer) {
+      | P1 => isChainInAMatrix(inMatrix, Red)
+      | P2 => isChainInAMatrix(inMatrix, Yellow)
+      };
+  /* #region Testing Case: checkWin */
+  checkExpect(
+    checkWin(
+      [
+        [None, None, None, None, None],
+        [None, None, None, None, Red],
+        [None, None, None, None, Red],
+        [None, None, None, None, Red],
+      ],
+      P1,
+    ),
+    false,
+    "check for checkWin 01",
+  );
+  checkExpect(
+    checkWin(
+      [
+        [None, None, None, None, Red],
+        [None, None, None, None, Red],
+        [None, None, None, None, Red],
+        [None, None, None, None, Red],
+      ],
+      P1,
+    ),
+    true,
+    "check for checkWin 02",
+  );
+  checkExpect(
+    checkWin(
+      [
+        [Red, None, None, None],
+        [Yellow, None, None, None],
+        [Red, None, None, None],
+        [Red, None, None, None],
+      ],
+      P1,
+    ),
+    false,
+    "check for checkWin 02-2",
+  );
+  checkExpect(
+    checkWin(
+      [
+        [None, None, None, None, None],
+        [None, None, None, None, None],
+        [None, None, None, None, Red],
+        [None, None, None, Yellow, Red],
+      ],
+      P1,
+    ),
+    false,
+    "check for checkWin 03",
+  );
+  checkExpect(
+    checkWin(
+      [
+        [None, None, None, None, None],
+        [None, None, None, None, None],
+        [None, None, None, Yellow, Red],
+        [None, None, Red, Red, Red],
+      ],
+      P1,
+    ),
+    false,
+    "check for checkWin 04",
+  );
+  checkExpect(
+    checkWin(
+      transpose([
+        [None, None, None, None],
+        [None, None, None, None],
+        [None, None, None, Yellow],
+        [None, None, Red, Red],
+      ]),
+      P1,
+    ),
+    false,
+    "check for checkWin 05",
+  );
+  /* #endregion */
+  /* nextState:
+   * Input: (state, move).
+   * Output: state.
+   */
   let nextState: (state, move) => state = {
-    let rec isCloneList: list('a) => bool =
-      fun
-      | []
-      | [_] => false
-      | [hd0, hd1] => hd0 == hd1
-      | [hd0, hd1, ...tl] => hd0 == hd1 && isCloneList(tl)
-      | _ => failwith("error: checkCloneList");
-    /* --- check win --- */
-    let isChainInAMatrix: (matrix, place) => bool = {
-      let rec isChainInAColumn: (list(place), place) => bool =
-        (inColumn, inPlace) =>
-          switch (inColumn) {
-          | []
-          | [_]
-          | [_, _]
-          | [_, _, _] => false
-          | [color0, _, _, _] => color0 == inPlace && isCloneList(inColumn)
-          // | [Red,Red,Red,Red,...tl] => true
-          | [color0, color1, color2, color3, ..._] =>
-            if (color0 == inPlace) {
-              isCloneList([color0, color1, color2, color3])
-              || isChainInAColumn(List.tl(inColumn), inPlace);
-            } else {
-              isChainInAColumn(List.tl(inColumn), inPlace);
-            }
-          }; // end isChainInAColum
-      let rec isChainInAMatrixRough: (matrix, place) => bool =
-        (inMatrix, inplace) =>
-          switch (inMatrix, inplace) {
-          | ([aCol], inplace) => isChainInAColumn(aCol, inplace)
-          | ([colHd, ...coltl], inplace) =>
-            isChainInAColumn(colHd, inplace)
-            || isChainInAMatrixRough(coltl, inplace)
-          | _ => failwith("error: isChainInAMatrixRough")
-          };
-      (inMatrix, inplace) =>
-        //vertical chain
-        isChainInAMatrixRough(inMatrix, inplace)
-        //horizon chain
-        || isChainInAMatrixRough(transpose(inMatrix), inplace);
-      //diagonal chain
-      //|| isChainInAMatrixRough(allDiagonal(inMatrix), inplace);
-    };
-    // end isChainInAMatrix
-    let checkWin: state => bool =
-      fun
-      | State(Ongoing(inplayer), inMatrix) =>
-        switch (inplayer) {
-        | P1 => isChainInAMatrix(inMatrix, Red)
-        | P2 => isChainInAMatrix(inMatrix, Yellow)
-        }
-      | _ => failwith("error: checkWin");
-    /* --- End of check win --- */
     (inState, inMove) =>
       switch (inState, inMove) {
-      | (State(Win(_), _), _)
+      | (State(Win(_), _), _) => inState
       | (State(Draw, _), _) => inState
       | (State(Ongoing(inPlayer), inMatrix), Move(noOfCol)) =>
         let newMatrix: matrix = nextStateHelper(inMatrix, noOfCol, inPlayer);
-        if (checkWin(State(Ongoing(inPlayer), newMatrix))) {
+        //Js.log(stringOfPlayer(inPlayer));
+        //Js.log(checkWin(newMatrix, inPlayer));
+        //Js.log(stringOfMatrix(newMatrix));
+        //Js.log(newMatrix);
+        if (checkWin(newMatrix, inPlayer)) {
           // got a winner. test on the next step before update the print
           State(
             Win(inPlayer),
@@ -290,20 +587,47 @@ module Connect4 = {
           );
         } else if (!List.mem(None, List.flatten(inMatrix))) {
           // no winner and the board is Full => Draw
-          State(
-            Draw,
-            nextStateHelper(inMatrix, noOfCol, inPlayer),
-          );
+          State(Draw, newMatrix);
         } else {
           // no winner and no full => keep going
           State(
             Ongoing(otherPlayer(inPlayer)),
-            nextStateHelper(inMatrix, noOfCol, inPlayer),
+            newMatrix,
           );
         };
       };
   };
-
+  /* Testing Case: nextState */
+  let inMatrix0: matrix = [
+    [None, None, None, None],
+    [None, None, None, None],
+    [None, None, None, None],
+  ];
+  let inMatrix1: matrix = [
+    [None, None, None, None],
+    [None, None, None, Red],
+    [None, None, None, None],
+  ];
+  checkExpect(
+    nextState(State(Ongoing(P1), inMatrix0), Move(1)),
+    State(Ongoing(P2), inMatrix1),
+    "checking for nextState 01",
+  );
+  let inMatrix2: matrix = [
+    [None, None, None, None],
+    [None, None, None, None],
+    [None, None, None, Yellow],
+  ];
+  let inMatrix3: matrix = [
+    [None, None, None, None],
+    [None, None, None, Red],
+    [None, None, None, Yellow],
+  ];
+  checkExpect(
+    nextState(State(Ongoing(P1), inMatrix2), Move(1)),
+    State(Ongoing(P2), inMatrix3),
+    "checking for nextState 02",
+  );
   //checking legal moves here
   let moveOfString: (string, state) => move =
     (str, myState) => {

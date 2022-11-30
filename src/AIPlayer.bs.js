@@ -64,4 +64,4 @@ exports.AIPlayer = AIPlayer;
 exports.TestGame = TestGame;
 exports.TestAIPlayer = TestAIPlayer;
 exports.MyAIPlayer = MyAIPlayer;
-/* No side effect */
+/* Connect4-Game_project Not a pure module */

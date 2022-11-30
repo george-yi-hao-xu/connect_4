@@ -118,4 +118,4 @@ exports.HumanPlayer = HumanPlayer;
 exports.TestGame = TestGame;
 exports.TestHumanPlayer = TestHumanPlayer;
 exports.MyHumanPlayer = MyHumanPlayer;
-/* No side effect */
+/* Connect4-Game_project Not a pure module */
