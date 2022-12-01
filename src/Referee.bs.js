@@ -343,7 +343,7 @@ var R3Human2AI = (function (param) {
       playerName: $$let$5.playerName
     });
 
-Curry._1(R2Human2Human.playGame, undefined);
+Curry._1(R3Human2AI.playGame, undefined);
 
 exports.Referee = Referee;
 exports.R1 = R1;

@@ -45,7 +45,7 @@ module AIPlayer = (MyGame: Game) => {
     alop =>
       switch (alop) {
       | [] => failwith("Error: cannot lookUpMax in ")
-      | [(item, _), ..._] => lookUpMaxHelper(alop, item, 0.0)
+      | [(item, numf), ..._] => lookUpMaxHelper(alop, item, numf)
       };
   };
   checkExpect(
@@ -53,18 +53,41 @@ module AIPlayer = (MyGame: Game) => {
     "Tom",
     "check for lookUpMax in AIPlayer",
   );
+  /* lookUpMin:
+   * Input: alop, a list of pairs, with type('a, float)
+   * Output: 'a, the item w/ smallest float number
+   */
+  let lookUpMin: list(('a, float)) => 'a =
+    inalop => {
+      let oppositeNumfList: list(('a, float)) =
+        List.map(
+          element => {
+            switch (element) {
+            | (item, numf) => (item, 0.0 -. numf)
+            }
+          },
+          inalop,
+        );
+      lookUpMax(oppositeNumfList);
+    };
+  checkExpect(
+    lookUpMin([("Tom", 4.0), ("Jacky", 2.0), ("John", 3.0)]),
+    "Jacky",
+    "check for lookUpMin in AIPlayer",
+  );
   let nextMove: PlayerGame.state => PlayerGame.move =
     s => {
       /* simple version;
          List.hd(PlayerGame.legalMoves(s));*/
-      let nextLegalMoves: list(move) = PlayerGame.legalMoves(s);
+      let nextLegalMoves: list(move) = PlayerGame.legalMoves(s); // get all the legal moves
       let nextStates: list(state) =
-        List.map(move => PlayerGame.nextState(s, move), nextLegalMoves);
+        List.map(move => PlayerGame.nextState(s, move), nextLegalMoves); // eval the next state
       let nextEstValues: list(float) =
-        List.map(state => PlayerGame.estimateValue(state), nextStates);
+        List.map(state => PlayerGame.estimateValue(state), nextStates); // eval the estimated value
       let nextMoveVal: list((move, float)) =
-        pair2lists(nextLegalMoves, nextEstValues);
-      List.hd(PlayerGame.legalMoves(s));
+        pair2lists(nextLegalMoves, nextEstValues); // pair the move with the float value
+
+      lookUpMin(nextMoveVal); // now in R3Human2AI.playGame() the AI is P2
     };
 
   /* put your team name here! */

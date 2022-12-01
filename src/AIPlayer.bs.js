@@ -83,40 +83,40 @@ function AIPlayer(MyGame) {
         }
       }, "check for pair2lists 01 (AIPlayer)");
   var lookUpMax = function (alop) {
-    if (alop) {
-      var _alop = alop;
-      var _item = alop.hd[0];
-      var _inNumf = 0.0;
-      while(true) {
-        var inNumf = _inNumf;
-        var item = _item;
-        var alop$1 = _alop;
-        if (!alop$1) {
-          return Pervasives.failwith("Error: cannot lookUpMax in ");
-        }
-        var tl = alop$1.tl;
-        var match = alop$1.hd;
-        var oneNumf = match[1];
-        var oneItem = match[0];
-        if (!tl) {
-          if (oneNumf > inNumf) {
-            return oneItem;
-          } else {
-            return item;
-          }
-        }
-        if (oneNumf < inNumf) {
-          _alop = tl;
-          continue ;
-        }
-        _inNumf = oneNumf;
-        _item = oneItem;
-        _alop = tl;
-        continue ;
-      };
-    } else {
+    if (!alop) {
       return Pervasives.failwith("Error: cannot lookUpMax in ");
     }
+    var match = alop.hd;
+    var _alop = alop;
+    var _item = match[0];
+    var _inNumf = match[1];
+    while(true) {
+      var inNumf = _inNumf;
+      var item = _item;
+      var alop$1 = _alop;
+      if (!alop$1) {
+        return Pervasives.failwith("Error: cannot lookUpMax in ");
+      }
+      var tl = alop$1.tl;
+      var match$1 = alop$1.hd;
+      var oneNumf = match$1[1];
+      var oneItem = match$1[0];
+      if (!tl) {
+        if (oneNumf > inNumf) {
+          return oneItem;
+        } else {
+          return item;
+        }
+      }
+      if (oneNumf < inNumf) {
+        _alop = tl;
+        continue ;
+      }
+      _inNumf = oneNumf;
+      _item = oneItem;
+      _alop = tl;
+      continue ;
+    };
   };
   CS17SetupGame$Game_project.checkExpect(lookUpMax({
             hd: [
@@ -137,6 +137,33 @@ function AIPlayer(MyGame) {
               }
             }
           }), "Tom", "check for lookUpMax in AIPlayer");
+  var lookUpMin = function (inalop) {
+    return lookUpMax(List.map((function (element) {
+                      return [
+                              element[0],
+                              0.0 - element[1]
+                            ];
+                    }), inalop));
+  };
+  CS17SetupGame$Game_project.checkExpect(lookUpMin({
+            hd: [
+              "Tom",
+              4.0
+            ],
+            tl: {
+              hd: [
+                "Jacky",
+                2.0
+              ],
+              tl: {
+                hd: [
+                  "John",
+                  3.0
+                ],
+                tl: /* [] */0
+              }
+            }
+          }), "Jacky", "check for lookUpMin in AIPlayer");
   var nextMove = function (s) {
     var nextLegalMoves = Curry._1(MyGame.legalMoves, s);
     var nextStates = List.map((function (move) {
@@ -145,13 +172,13 @@ function AIPlayer(MyGame) {
     var nextEstValues = List.map((function (state) {
             return Curry._1(MyGame.estimateValue, state);
           }), nextStates);
-    pair2lists(nextLegalMoves, nextEstValues);
-    return List.hd(Curry._1(MyGame.legalMoves, s));
+    return lookUpMin(pair2lists(nextLegalMoves, nextEstValues));
   };
   return {
           PlayerGame: MyGame,
           pair2lists: pair2lists,
           lookUpMax: lookUpMax,
+          lookUpMin: lookUpMin,
           nextMove: nextMove,
           playerName: ""
         };
@@ -264,40 +291,40 @@ CS17SetupGame$Game_project.checkExpect(pair2lists({
     }, "check for pair2lists 01 (AIPlayer)");
 
 function lookUpMax(alop) {
-  if (alop) {
-    var _alop = alop;
-    var _item = alop.hd[0];
-    var _inNumf = 0.0;
-    while(true) {
-      var inNumf = _inNumf;
-      var item = _item;
-      var alop$1 = _alop;
-      if (!alop$1) {
-        return Pervasives.failwith("Error: cannot lookUpMax in ");
-      }
-      var tl = alop$1.tl;
-      var match = alop$1.hd;
-      var oneNumf = match[1];
-      var oneItem = match[0];
-      if (!tl) {
-        if (oneNumf > inNumf) {
-          return oneItem;
-        } else {
-          return item;
-        }
-      }
-      if (oneNumf < inNumf) {
-        _alop = tl;
-        continue ;
-      }
-      _inNumf = oneNumf;
-      _item = oneItem;
-      _alop = tl;
-      continue ;
-    };
-  } else {
+  if (!alop) {
     return Pervasives.failwith("Error: cannot lookUpMax in ");
   }
+  var match = alop.hd;
+  var _alop = alop;
+  var _item = match[0];
+  var _inNumf = match[1];
+  while(true) {
+    var inNumf = _inNumf;
+    var item = _item;
+    var alop$1 = _alop;
+    if (!alop$1) {
+      return Pervasives.failwith("Error: cannot lookUpMax in ");
+    }
+    var tl = alop$1.tl;
+    var match$1 = alop$1.hd;
+    var oneNumf = match$1[1];
+    var oneItem = match$1[0];
+    if (!tl) {
+      if (oneNumf > inNumf) {
+        return oneItem;
+      } else {
+        return item;
+      }
+    }
+    if (oneNumf < inNumf) {
+      _alop = tl;
+      continue ;
+    }
+    _inNumf = oneNumf;
+    _item = oneItem;
+    _alop = tl;
+    continue ;
+  };
 }
 
 CS17SetupGame$Game_project.checkExpect(lookUpMax({
@@ -320,6 +347,35 @@ CS17SetupGame$Game_project.checkExpect(lookUpMax({
           }
         }), "Tom", "check for lookUpMax in AIPlayer");
 
+function lookUpMin(inalop) {
+  return lookUpMax(List.map((function (element) {
+                    return [
+                            element[0],
+                            0.0 - element[1]
+                          ];
+                  }), inalop));
+}
+
+CS17SetupGame$Game_project.checkExpect(lookUpMin({
+          hd: [
+            "Tom",
+            4.0
+          ],
+          tl: {
+            hd: [
+              "Jacky",
+              2.0
+            ],
+            tl: {
+              hd: [
+                "John",
+                3.0
+              ],
+              tl: /* [] */0
+            }
+          }
+        }), "Jacky", "check for lookUpMin in AIPlayer");
+
 function nextMove(s) {
   var nextLegalMoves = Curry._1(Connect4$Game_project.Connect4.legalMoves, s);
   var nextStates = List.map((function (move) {
@@ -328,8 +384,7 @@ function nextMove(s) {
   var nextEstValues = List.map((function (state) {
           return Curry._1(Connect4$Game_project.Connect4.estimateValue, state);
         }), nextStates);
-  pair2lists(nextLegalMoves, nextEstValues);
-  return List.hd(Curry._1(Connect4$Game_project.Connect4.legalMoves, s));
+  return lookUpMin(pair2lists(nextLegalMoves, nextEstValues));
 }
 
 var playerName = "";
@@ -338,6 +393,7 @@ var TestAIPlayer = {
   PlayerGame: MyGame,
   pair2lists: pair2lists,
   lookUpMax: lookUpMax,
+  lookUpMin: lookUpMin,
   nextMove: nextMove,
   playerName: playerName
 };
