@@ -75,6 +75,12 @@ module AIPlayer = (MyGame: Game) => {
     "Jacky",
     "check for lookUpMin in AIPlayer",
   );
+  let checkWhichPlayer: PlayerGame.state => PlayerGame.whichPlayer =
+    inState =>
+      switch (inState) {
+      | State(Ongoing(player), _) => player //? how to tell if now it's P1 or P2
+      | _ => failwith("error: checkWhichPlayer")
+      };
   let nextMove: PlayerGame.state => PlayerGame.move =
     s => {
       /* simple version;
