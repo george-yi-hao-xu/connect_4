@@ -329,7 +329,7 @@ var R3Human2AI = (function (param) {
           estimateValue: Connect4$Game_project.Connect4.estimateValue
         }));
 
-Curry._1(R3Human2AI.playGame, undefined);
+Curry._1(R2Human2Human.playGame, undefined);
 
 exports.Referee = Referee;
 exports.R1 = R1;

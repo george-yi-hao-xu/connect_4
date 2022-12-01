@@ -12,8 +12,7 @@ module type Game = {
 
   /* the state of the game: the position, status, anything else associated
      with the game at a given turn */
-  type state =
-    | State(status, 'a);
+  type state;
   /* describes a move that a player can make */
   type move;
 

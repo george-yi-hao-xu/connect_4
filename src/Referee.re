@@ -64,5 +64,5 @@ module R3Human2AI =
   );
 
 // R1.playGame();
-// R2Human2Human.playGame();
-R3Human2AI.playGame();
+R2Human2Human.playGame();
+// R3Human2AI.playGame();
