@@ -46,7 +46,7 @@ function Referee(MyGame, Player1, Player2) {
         };
 }
 
-var partial_arg = AIPlayer$Game_project.AIPlayer({
+var $$let = AIPlayer$Game_project.AIPlayer({
       stringOfPlayer: Connect4$Game_project.Connect4.stringOfPlayer,
       stringOfState: Connect4$Game_project.Connect4.stringOfState,
       stringOfMove: Connect4$Game_project.Connect4.stringOfMove,
@@ -57,6 +57,8 @@ var partial_arg = AIPlayer$Game_project.AIPlayer({
       moveOfString: Connect4$Game_project.Connect4.moveOfString,
       estimateValue: Connect4$Game_project.Connect4.estimateValue
     });
+
+var partial_arg_nextMove = $$let.nextMove;
 
 var partial_arg_stringOfPlayer = Connect4$Game_project.Connect4.stringOfPlayer;
 
@@ -76,7 +78,7 @@ var partial_arg_moveOfString = Connect4$Game_project.Connect4.moveOfString;
 
 var partial_arg_estimateValue = Connect4$Game_project.Connect4.estimateValue;
 
-var partial_arg$1 = {
+var partial_arg = {
   stringOfPlayer: partial_arg_stringOfPlayer,
   stringOfState: partial_arg_stringOfState,
   stringOfMove: partial_arg_stringOfMove,
@@ -87,6 +89,18 @@ var partial_arg$1 = {
   moveOfString: partial_arg_moveOfString,
   estimateValue: partial_arg_estimateValue
 };
+
+var $$let$1 = AIPlayer$Game_project.AIPlayer({
+      stringOfPlayer: Connect4$Game_project.Connect4.stringOfPlayer,
+      stringOfState: Connect4$Game_project.Connect4.stringOfState,
+      stringOfMove: Connect4$Game_project.Connect4.stringOfMove,
+      initialState: Connect4$Game_project.Connect4.initialState,
+      legalMoves: Connect4$Game_project.Connect4.legalMoves,
+      gameStatus: Connect4$Game_project.Connect4.gameStatus,
+      nextState: Connect4$Game_project.Connect4.nextState,
+      moveOfString: Connect4$Game_project.Connect4.moveOfString,
+      estimateValue: Connect4$Game_project.Connect4.estimateValue
+    });
 
 var R1 = (function (param) {
       var playGame = function (param$1) {
@@ -106,7 +120,7 @@ var R1 = (function (param) {
             }
             var player$1 = player._0;
             console.log(Curry._1(partial_arg_stringOfPlayer, player$1) + "'s turn.");
-            var theMove = player$1 ? Curry._1(param.nextMove, s) : Curry._1(partial_arg.nextMove, s);
+            var theMove = player$1 ? Curry._1(param.nextMove, s) : Curry._1(partial_arg_nextMove, s);
             console.log(Curry._1(partial_arg_stringOfPlayer, player$1) + (" makes the move " + Curry._1(partial_arg_stringOfMove, theMove)));
             _s = Curry._2(partial_arg_nextState, s, theMove);
             continue ;
@@ -122,22 +136,16 @@ var R1 = (function (param) {
         }
       };
       return {
-              CurrentGame: partial_arg$1,
+              CurrentGame: partial_arg,
               playGame: playGame
             };
-    })(AIPlayer$Game_project.AIPlayer({
-          stringOfPlayer: Connect4$Game_project.Connect4.stringOfPlayer,
-          stringOfState: Connect4$Game_project.Connect4.stringOfState,
-          stringOfMove: Connect4$Game_project.Connect4.stringOfMove,
-          initialState: Connect4$Game_project.Connect4.initialState,
-          legalMoves: Connect4$Game_project.Connect4.legalMoves,
-          gameStatus: Connect4$Game_project.Connect4.gameStatus,
-          nextState: Connect4$Game_project.Connect4.nextState,
-          moveOfString: Connect4$Game_project.Connect4.moveOfString,
-          estimateValue: Connect4$Game_project.Connect4.estimateValue
-        }));
+    })({
+      PlayerGame: $$let$1.PlayerGame,
+      nextMove: $$let$1.nextMove,
+      playerName: $$let$1.playerName
+    });
 
-var $$let = HumanPlayer$Game_project.HumanPlayer({
+var $$let$2 = HumanPlayer$Game_project.HumanPlayer({
       stringOfPlayer: Connect4$Game_project.Connect4.stringOfPlayer,
       stringOfState: Connect4$Game_project.Connect4.stringOfState,
       stringOfMove: Connect4$Game_project.Connect4.stringOfMove,
@@ -149,7 +157,7 @@ var $$let = HumanPlayer$Game_project.HumanPlayer({
       estimateValue: Connect4$Game_project.Connect4.estimateValue
     });
 
-var partial_arg_nextMove = $$let.nextMove;
+var partial_arg_nextMove$1 = $$let$2.nextMove;
 
 var partial_arg_stringOfPlayer$1 = Connect4$Game_project.Connect4.stringOfPlayer;
 
@@ -169,7 +177,7 @@ var partial_arg_moveOfString$1 = Connect4$Game_project.Connect4.moveOfString;
 
 var partial_arg_estimateValue$1 = Connect4$Game_project.Connect4.estimateValue;
 
-var partial_arg$2 = {
+var partial_arg$1 = {
   stringOfPlayer: partial_arg_stringOfPlayer$1,
   stringOfState: partial_arg_stringOfState$1,
   stringOfMove: partial_arg_stringOfMove$1,
@@ -181,7 +189,7 @@ var partial_arg$2 = {
   estimateValue: partial_arg_estimateValue$1
 };
 
-var $$let$1 = HumanPlayer$Game_project.HumanPlayer({
+var $$let$3 = HumanPlayer$Game_project.HumanPlayer({
       stringOfPlayer: Connect4$Game_project.Connect4.stringOfPlayer,
       stringOfState: Connect4$Game_project.Connect4.stringOfState,
       stringOfMove: Connect4$Game_project.Connect4.stringOfMove,
@@ -211,7 +219,7 @@ var R2Human2Human = (function (param) {
             }
             var player$1 = player._0;
             console.log(Curry._1(partial_arg_stringOfPlayer$1, player$1) + "'s turn.");
-            var theMove = player$1 ? Curry._1(param.nextMove, s) : Curry._1(partial_arg_nextMove, s);
+            var theMove = player$1 ? Curry._1(param.nextMove, s) : Curry._1(partial_arg_nextMove$1, s);
             console.log(Curry._1(partial_arg_stringOfPlayer$1, player$1) + (" makes the move " + Curry._1(partial_arg_stringOfMove$1, theMove)));
             _s = Curry._2(partial_arg_nextState$1, s, theMove);
             continue ;
@@ -227,16 +235,16 @@ var R2Human2Human = (function (param) {
         }
       };
       return {
-              CurrentGame: partial_arg$2,
+              CurrentGame: partial_arg$1,
               playGame: playGame
             };
     })({
-      PlayerGame: $$let$1.PlayerGame,
-      nextMove: $$let$1.nextMove,
-      playerName: $$let$1.playerName
+      PlayerGame: $$let$3.PlayerGame,
+      nextMove: $$let$3.nextMove,
+      playerName: $$let$3.playerName
     });
 
-var $$let$2 = HumanPlayer$Game_project.HumanPlayer({
+var $$let$4 = HumanPlayer$Game_project.HumanPlayer({
       stringOfPlayer: Connect4$Game_project.Connect4.stringOfPlayer,
       stringOfState: Connect4$Game_project.Connect4.stringOfState,
       stringOfMove: Connect4$Game_project.Connect4.stringOfMove,
@@ -248,7 +256,7 @@ var $$let$2 = HumanPlayer$Game_project.HumanPlayer({
       estimateValue: Connect4$Game_project.Connect4.estimateValue
     });
 
-var partial_arg_nextMove$1 = $$let$2.nextMove;
+var partial_arg_nextMove$2 = $$let$4.nextMove;
 
 var partial_arg_stringOfPlayer$2 = Connect4$Game_project.Connect4.stringOfPlayer;
 
@@ -268,7 +276,7 @@ var partial_arg_moveOfString$2 = Connect4$Game_project.Connect4.moveOfString;
 
 var partial_arg_estimateValue$2 = Connect4$Game_project.Connect4.estimateValue;
 
-var partial_arg$3 = {
+var partial_arg$2 = {
   stringOfPlayer: partial_arg_stringOfPlayer$2,
   stringOfState: partial_arg_stringOfState$2,
   stringOfMove: partial_arg_stringOfMove$2,
@@ -279,6 +287,18 @@ var partial_arg$3 = {
   moveOfString: partial_arg_moveOfString$2,
   estimateValue: partial_arg_estimateValue$2
 };
+
+var $$let$5 = AIPlayer$Game_project.AIPlayer({
+      stringOfPlayer: Connect4$Game_project.Connect4.stringOfPlayer,
+      stringOfState: Connect4$Game_project.Connect4.stringOfState,
+      stringOfMove: Connect4$Game_project.Connect4.stringOfMove,
+      initialState: Connect4$Game_project.Connect4.initialState,
+      legalMoves: Connect4$Game_project.Connect4.legalMoves,
+      gameStatus: Connect4$Game_project.Connect4.gameStatus,
+      nextState: Connect4$Game_project.Connect4.nextState,
+      moveOfString: Connect4$Game_project.Connect4.moveOfString,
+      estimateValue: Connect4$Game_project.Connect4.estimateValue
+    });
 
 var R3Human2AI = (function (param) {
       var playGame = function (param$1) {
@@ -298,7 +318,7 @@ var R3Human2AI = (function (param) {
             }
             var player$1 = player._0;
             console.log(Curry._1(partial_arg_stringOfPlayer$2, player$1) + "'s turn.");
-            var theMove = player$1 ? Curry._1(param.nextMove, s) : Curry._1(partial_arg_nextMove$1, s);
+            var theMove = player$1 ? Curry._1(param.nextMove, s) : Curry._1(partial_arg_nextMove$2, s);
             console.log(Curry._1(partial_arg_stringOfPlayer$2, player$1) + (" makes the move " + Curry._1(partial_arg_stringOfMove$2, theMove)));
             _s = Curry._2(partial_arg_nextState$2, s, theMove);
             continue ;
@@ -314,20 +334,14 @@ var R3Human2AI = (function (param) {
         }
       };
       return {
-              CurrentGame: partial_arg$3,
+              CurrentGame: partial_arg$2,
               playGame: playGame
             };
-    })(AIPlayer$Game_project.AIPlayer({
-          stringOfPlayer: Connect4$Game_project.Connect4.stringOfPlayer,
-          stringOfState: Connect4$Game_project.Connect4.stringOfState,
-          stringOfMove: Connect4$Game_project.Connect4.stringOfMove,
-          initialState: Connect4$Game_project.Connect4.initialState,
-          legalMoves: Connect4$Game_project.Connect4.legalMoves,
-          gameStatus: Connect4$Game_project.Connect4.gameStatus,
-          nextState: Connect4$Game_project.Connect4.nextState,
-          moveOfString: Connect4$Game_project.Connect4.moveOfString,
-          estimateValue: Connect4$Game_project.Connect4.estimateValue
-        }));
+    })({
+      PlayerGame: $$let$5.PlayerGame,
+      nextMove: $$let$5.nextMove,
+      playerName: $$let$5.playerName
+    });
 
 Curry._1(R2Human2Human.playGame, undefined);
 
