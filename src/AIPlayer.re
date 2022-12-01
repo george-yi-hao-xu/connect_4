@@ -4,17 +4,21 @@ open Game;
 module AIPlayer = (MyGame: Game) => {
   module PlayerGame = MyGame; // Connect4
   /* TODO */
+  open PlayerGame;
+  let minimax: PlayerGame.state => PlayerGame.move =
+    
+      };
   let nextMove: PlayerGame.state => PlayerGame.move =
     s => {
       // simple version;
       // List.hd(PlayerGame.legalMoves(s));
-      switch(s){
-        | State(Ongoing(inPlayer), inMatrix) =>
-        // TO DO: the emeny's all legal move (7 or less); store in a tree
-        // PlayerGame.legalMoves 
-        // TO DO: AI(this)'s all legal move and its estimate value
-        // TO DO: pick the min/max(minimax) and return the BEST move
-      }
+      switch (s) {
+      | State(Ongoing(inPlayer), inMatrix) => PlayerGame.legalMoves(s)
+      // TO DO: the emeny's all legal move (7 or less); store in a tree
+      // PlayerGame.legalMoves
+      // TO DO: AI(this)'s all legal move and its estimate value
+      // TO DO: pick the min/max(minimax) and return the BEST move
+      };
     };
 
   /* put your team name here! */

@@ -641,7 +641,7 @@ module Connect4 = {
         failwith("error: illegal move");
       };
     };
-  
+
   let estimateValue: state => float =
     inState =>
       switch (inState) {
