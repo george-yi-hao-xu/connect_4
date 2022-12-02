@@ -75,25 +75,53 @@ module AIPlayer = (MyGame: Game) => {
     "Jacky",
     "check for lookUpMin in AIPlayer",
   );
+  /* checkWhichPlayer:
+   * Input: inState, the state of the game
+   * Output: whichPlayer, P1 or P2, so that I can know look for min or max
+   */
   let checkWhichPlayer: PlayerGame.state => PlayerGame.whichPlayer =
-    inState =>
-      switch (inState) {
-      | State(Ongoing(player), _) => player //? how to tell if now it's P1 or P2
-      | _ => failwith("error: checkWhichPlayer")
-      };
+    inState => switch(PlayerGame.gameStatus(inState)){
+      | Ongoing(currentPlayer) => currentPlayer
+      | Win(currentPlayer) => currentPlayer
+      | Draw => failwith("error: game over")
+    };
+  /* rootValues:
+   * Input: inState, depth; 
+   * Output: list(float), all the estimated value of 
+   */
+  let rootValues: (PlayerGame.state, int) => (list(list(PlayerGame.move)), list(float)) = {
+    (inState,depth) => switch(depth){
+      | 1 => failwith("error: cannot look for itself") // itself? no value
+      | n =>  // does it inclued enemy's move, I guess so
+    }
+  };
+  let minimaxHelper: (PlayerGame.state, int, list(PlayerGame.move)) => PlayerGame.move =
+    (s, depth) => switch(depth){
+      | 1 => failwith("error: cannot look for itself") // itself? no value
+      | n => switch(checkWhichPlayer(s)){
+          | P1 => lookUpMax(rootValues(s,n))
+          | P2 => lookUpMin(rootValues(s,n))
+          }
+      // in the end, get the best movePATH, but just need get the List.hd
+    }
   let nextMove: PlayerGame.state => PlayerGame.move =
     s => {
       /* simple version;
          List.hd(PlayerGame.legalMoves(s));*/
       let nextLegalMoves: list(move) = PlayerGame.legalMoves(s); // get all the legal moves
       let nextStates: list(state) =
-        List.map(move => PlayerGame.nextState(s, move), nextLegalMoves); // eval the next state
+        List.map(move => PlayerGame.nextState(s, move), nextLegalMoves); // get the next state; this is emeny's value
       let nextEstValues: list(float) =
-        List.map(state => PlayerGame.estimateValue(state), nextStates); // eval the estimated value
+        List.map(state => PlayerGame.estimateValue(state), nextStates); // get the estimated value
       let nextMoveVal: list((move, float)) =
         pair2lists(nextLegalMoves, nextEstValues); // pair the move with the float value
-
-      lookUpMin(nextMoveVal); // now in R3Human2AI.playGame() the AI is P2
+      // nextStates. rec on nextLegalMoves => next-nextStates => estimatedValue of next-nextStates => min/max => move path
+      // not a tree. but a tuple? (list(move), estimatedValue, depth), but the enemy move inclued?
+      switch(checkWhichPlayer(s)){
+        | P1 => lookUpMax(nextMoveVal) // ? now looking for the enemy value or minimax only odd number; like 3; look for next again?
+        | P2 => lookUpMin(nextMoveVal)
+      }
+      // lookUpMin(nextMoveVal); // now in R3Human2AI.playGame() the AI is P2
     };
 
   /* put your team name here! */

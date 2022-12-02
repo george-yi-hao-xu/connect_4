@@ -164,6 +164,14 @@ function AIPlayer(MyGame) {
               }
             }
           }), "Jacky", "check for lookUpMin in AIPlayer");
+  var checkWhichPlayer = function (inState) {
+    var currentPlayer = Curry._1(MyGame.gameStatus, inState);
+    if (typeof currentPlayer === "number") {
+      return Pervasives.failwith("error: game over");
+    } else {
+      return currentPlayer._0;
+    }
+  };
   var nextMove = function (s) {
     var nextLegalMoves = Curry._1(MyGame.legalMoves, s);
     var nextStates = List.map((function (move) {
@@ -172,13 +180,20 @@ function AIPlayer(MyGame) {
     var nextEstValues = List.map((function (state) {
             return Curry._1(MyGame.estimateValue, state);
           }), nextStates);
-    return lookUpMin(pair2lists(nextLegalMoves, nextEstValues));
+    var nextMoveVal = pair2lists(nextLegalMoves, nextEstValues);
+    var match = checkWhichPlayer(s);
+    if (match) {
+      return lookUpMin(nextMoveVal);
+    } else {
+      return lookUpMax(nextMoveVal);
+    }
   };
   return {
           PlayerGame: MyGame,
           pair2lists: pair2lists,
           lookUpMax: lookUpMax,
           lookUpMin: lookUpMin,
+          checkWhichPlayer: checkWhichPlayer,
           nextMove: nextMove,
           playerName: ""
         };
@@ -376,6 +391,15 @@ CS17SetupGame$Game_project.checkExpect(lookUpMin({
           }
         }), "Jacky", "check for lookUpMin in AIPlayer");
 
+function checkWhichPlayer(inState) {
+  var currentPlayer = Curry._1(Connect4$Game_project.Connect4.gameStatus, inState);
+  if (typeof currentPlayer === "number") {
+    return Pervasives.failwith("error: game over");
+  } else {
+    return currentPlayer._0;
+  }
+}
+
 function nextMove(s) {
   var nextLegalMoves = Curry._1(Connect4$Game_project.Connect4.legalMoves, s);
   var nextStates = List.map((function (move) {
@@ -384,7 +408,13 @@ function nextMove(s) {
   var nextEstValues = List.map((function (state) {
           return Curry._1(Connect4$Game_project.Connect4.estimateValue, state);
         }), nextStates);
-  return lookUpMin(pair2lists(nextLegalMoves, nextEstValues));
+  var nextMoveVal = pair2lists(nextLegalMoves, nextEstValues);
+  var match = checkWhichPlayer(s);
+  if (match) {
+    return lookUpMin(nextMoveVal);
+  } else {
+    return lookUpMax(nextMoveVal);
+  }
 }
 
 var playerName = "";
@@ -394,6 +424,7 @@ var TestAIPlayer = {
   pair2lists: pair2lists,
   lookUpMax: lookUpMax,
   lookUpMin: lookUpMin,
+  checkWhichPlayer: checkWhichPlayer,
   nextMove: nextMove,
   playerName: playerName
 };
