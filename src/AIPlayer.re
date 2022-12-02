@@ -5,6 +5,7 @@ module AIPlayer = (MyGame: Game) => {
   module PlayerGame = MyGame; // Connect4
   /* TODO */
   open PlayerGame;
+  type movePath = list(PlayerGame.move);
   /*  pair2lists
    *  Input: listA with type list('a), listB with type list('b)
    *  Output: a list of pairs. Each pair has the type ('a,'b)
@@ -85,26 +86,12 @@ module AIPlayer = (MyGame: Game) => {
       | Win(currentPlayer) => currentPlayer
       | Draw => failwith("error: game over")
     };
-  /* rootValues:
-   * Input: inState, depth; 
-   * Output: list(float), all the estimated value of 
+  /* nextAllLegalMovesVal:
+   * Input: inState; 
+   * Output: list((PlayerGame.move, float)). next step's move and the corresponding estimated value
+   *  type movePath = list(PlayerGame.move);
    */
-  let rootValues: (PlayerGame.state, int) => (list(list(PlayerGame.move)), list(float)) = {
-    (inState,depth) => switch(depth){
-      | 1 => failwith("error: cannot look for itself") // itself? no value
-      | n =>  // does it inclued enemy's move, I guess so
-    }
-  };
-  let minimaxHelper: (PlayerGame.state, int, list(PlayerGame.move)) => PlayerGame.move =
-    (s, depth) => switch(depth){
-      | 1 => failwith("error: cannot look for itself") // itself? no value
-      | n => switch(checkWhichPlayer(s)){
-          | P1 => lookUpMax(rootValues(s,n))
-          | P2 => lookUpMin(rootValues(s,n))
-          }
-      // in the end, get the best movePATH, but just need get the List.hd
-    }
-  let nextMove: PlayerGame.state => PlayerGame.move =
+  let nextAllLegalMovePathVal: PlayerGame.state => list((movePath, float)) =
     s => {
       /* simple version;
          List.hd(PlayerGame.legalMoves(s));*/
@@ -113,8 +100,32 @@ module AIPlayer = (MyGame: Game) => {
         List.map(move => PlayerGame.nextState(s, move), nextLegalMoves); // get the next state; this is emeny's value
       let nextEstValues: list(float) =
         List.map(state => PlayerGame.estimateValue(state), nextStates); // get the estimated value
-      let nextMoveVal: list((move, float)) =
-        pair2lists(nextLegalMoves, nextEstValues); // pair the move with the float value
+      let nextMoveVal: list((movePath, float)) =
+        pair2lists([nextLegalMoves], nextEstValues); // pair the move with the float value
+      nextMoveVal;
+  };
+  /* rootValues:
+   * Input: inState, depth; 
+   * Output: list(float), all the estimated value of 
+   */
+  let rootValues: (PlayerGame.state, int) => list((movePath, float)) = {
+    (inState,depth) => switch(depth){
+      | 1 =>                                 // itself? no value
+      | 3 => nextAllLegalMovePathVal(inState)
+      | n =>  nextAllLegalMovePathVal(inState)// does it inclued enemy's move, I guess so
+    }
+  };
+  let minimaxHelper: (PlayerGame.state, int, movePath) => PlayerGame.move =
+    (s, depth) => switch(depth){
+      | 1 => failwith("error: cannot look for itself") // itself? no value
+      | n => switch(checkWhichPlayer(s)){
+          | P1 => lookUpMax(rootValues(s,n))
+          | P2 => lookUpMin(rootValues(s,n))
+          }
+      // in the end, get the best movePATH, but just need get the List.hd(movePath)
+    }
+  let nextMove: PlayerGame.state => PlayerGame.move =
+    {
       // nextStates. rec on nextLegalMoves => next-nextStates => estimatedValue of next-nextStates => min/max => move path
       // not a tree. but a tuple? (list(move), estimatedValue, depth), but the enemy move inclued?
       switch(checkWhichPlayer(s)){
