@@ -172,21 +172,89 @@ function AIPlayer(MyGame) {
       return currentPlayer._0;
     }
   };
-  var nextMove = function (s) {
-    var nextLegalMoves = Curry._1(MyGame.legalMoves, s);
-    var nextStates = List.map((function (move) {
-            return Curry._2(MyGame.nextState, s, move);
+  var nextMovePathStatePair = function (s) {
+    var nextLegalMoves = List.map((function (elem) {
+            return {
+                    hd: elem,
+                    tl: /* [] */0
+                  };
+          }), Curry._1(MyGame.legalMoves, s));
+    var nextStates = List.map((function (movePath) {
+            return Curry._2(MyGame.nextState, s, List.hd(movePath));
           }), nextLegalMoves);
-    var nextEstValues = List.map((function (state) {
-            return Curry._1(MyGame.estimateValue, state);
-          }), nextStates);
-    var nextMoveVal = pair2lists(nextLegalMoves, nextEstValues);
+    return pair2lists(nextLegalMoves, nextStates);
+  };
+  var chainMovePathStatePair = function (previousMovePathState, newNextMovePathStatePair) {
+    if (!previousMovePathState) {
+      return Pervasives.failwith("error: chainMovePathStatePair");
+    }
+    var preTl = previousMovePathState.tl;
+    var preMovePathHd = previousMovePathState.hd[0];
+    if (!preTl) {
+      if (!newNextMovePathStatePair) {
+        return Pervasives.failwith("error: chainMovePathStatePair");
+      }
+      if (!newNextMovePathStatePair.tl) {
+        var match = newNextMovePathStatePair.hd;
+        return {
+                hd: [
+                  Pervasives.$at(preMovePathHd, match[0]),
+                  match[1]
+                ],
+                tl: /* [] */0
+              };
+      }
+      
+    }
+    if (!newNextMovePathStatePair) {
+      return Pervasives.failwith("error: chainMovePathStatePair");
+    }
+    var match$1 = newNextMovePathStatePair.hd;
+    return {
+            hd: [
+              Pervasives.$at(preMovePathHd, match$1[0]),
+              match$1[1]
+            ],
+            tl: chainMovePathStatePair(preTl, newNextMovePathStatePair.tl)
+          };
+  };
+  var bottomState = function (inState, depth) {
+    if (depth === 1) {
+      return {
+              hd: [
+                /* [] */0,
+                inState
+              ],
+              tl: /* [] */0
+            };
+    }
+    if (depth === 2) {
+      return nextMovePathStatePair(inState);
+    }
+    var previousMovePathState = Curry._2(bottomState, inState, depth - 1 | 0);
+    var newNextMovePathStatePair = nextMovePathStatePair(inState);
+    return chainMovePathStatePair(previousMovePathState, newNextMovePathStatePair);
+  };
+  var minimax = function (s, depth) {
+    if (depth === 1) {
+      return Pervasives.failwith("error: cannot look for itself");
+    }
+    var thisBottomState = Curry._2(bottomState, s, depth);
+    var thisBottomEstval = List.map((function (pair) {
+            return [
+                    pair[0],
+                    Curry._1(MyGame.estimateValue, pair[1])
+                  ];
+          }), thisBottomState);
     var match = checkWhichPlayer(s);
     if (match) {
-      return lookUpMin(nextMoveVal);
+      return List.hd(lookUpMin(thisBottomEstval));
     } else {
-      return lookUpMax(nextMoveVal);
+      return List.hd(lookUpMax(thisBottomEstval));
     }
+  };
+  var nextMove = function (s) {
+    return minimax(s, 3);
   };
   return {
           PlayerGame: MyGame,
@@ -194,8 +262,11 @@ function AIPlayer(MyGame) {
           lookUpMax: lookUpMax,
           lookUpMin: lookUpMin,
           checkWhichPlayer: checkWhichPlayer,
+          nextMovePathStatePair: nextMovePathStatePair,
+          bottomState: bottomState,
+          minimax: minimax,
           nextMove: nextMove,
-          playerName: ""
+          playerName: "TopG"
         };
 }
 
@@ -400,24 +471,96 @@ function checkWhichPlayer(inState) {
   }
 }
 
-function nextMove(s) {
-  var nextLegalMoves = Curry._1(Connect4$Game_project.Connect4.legalMoves, s);
-  var nextStates = List.map((function (move) {
-          return Curry._2(Connect4$Game_project.Connect4.nextState, s, move);
+function nextMovePathStatePair(s) {
+  var nextLegalMoves = List.map((function (elem) {
+          return {
+                  hd: elem,
+                  tl: /* [] */0
+                };
+        }), Curry._1(Connect4$Game_project.Connect4.legalMoves, s));
+  var nextStates = List.map((function (movePath) {
+          return Curry._2(Connect4$Game_project.Connect4.nextState, s, List.hd(movePath));
         }), nextLegalMoves);
-  var nextEstValues = List.map((function (state) {
-          return Curry._1(Connect4$Game_project.Connect4.estimateValue, state);
-        }), nextStates);
-  var nextMoveVal = pair2lists(nextLegalMoves, nextEstValues);
+  return pair2lists(nextLegalMoves, nextStates);
+}
+
+function chainMovePathStatePair(previousMovePathState, newNextMovePathStatePair) {
+  if (!previousMovePathState) {
+    return Pervasives.failwith("error: chainMovePathStatePair");
+  }
+  var preTl = previousMovePathState.tl;
+  var preMovePathHd = previousMovePathState.hd[0];
+  if (!preTl) {
+    if (!newNextMovePathStatePair) {
+      return Pervasives.failwith("error: chainMovePathStatePair");
+    }
+    if (!newNextMovePathStatePair.tl) {
+      var match = newNextMovePathStatePair.hd;
+      return {
+              hd: [
+                Pervasives.$at(preMovePathHd, match[0]),
+                match[1]
+              ],
+              tl: /* [] */0
+            };
+    }
+    
+  }
+  if (!newNextMovePathStatePair) {
+    return Pervasives.failwith("error: chainMovePathStatePair");
+  }
+  var match$1 = newNextMovePathStatePair.hd;
+  return {
+          hd: [
+            Pervasives.$at(preMovePathHd, match$1[0]),
+            match$1[1]
+          ],
+          tl: chainMovePathStatePair(preTl, newNextMovePathStatePair.tl)
+        };
+}
+
+function bottomState(inState, depth) {
+  if (depth === 1) {
+    return {
+            hd: [
+              /* [] */0,
+              inState
+            ],
+            tl: /* [] */0
+          };
+  }
+  if (depth === 2) {
+    return nextMovePathStatePair(inState);
+  }
+  var previousMovePathState = Curry._2(bottomState, inState, depth - 1 | 0);
+  var newNextMovePathStatePair = nextMovePathStatePair(inState);
+  return chainMovePathStatePair(previousMovePathState, newNextMovePathStatePair);
+}
+
+function minimax(s, depth) {
+  if (depth === 1) {
+    return Pervasives.failwith("error: cannot look for itself");
+  }
+  var thisBottomState = Curry._2(bottomState, s, depth);
+  var thisBottomEstval = List.map((function (pair) {
+          return [
+                  pair[0],
+                  Curry._1(Connect4$Game_project.Connect4.estimateValue, pair[1])
+                ];
+        }), thisBottomState);
   var match = checkWhichPlayer(s);
   if (match) {
-    return lookUpMin(nextMoveVal);
+    return List.hd(lookUpMin(thisBottomEstval));
   } else {
-    return lookUpMax(nextMoveVal);
+    return List.hd(lookUpMax(thisBottomEstval));
   }
 }
 
-var playerName = "";
+function nextMove(s) {
+  return minimax(s, 3);
+}
+
+var playerName = "TopG";
 
 var TestAIPlayer = {
   PlayerGame: MyGame,
@@ -425,6 +568,9 @@ var TestAIPlayer = {
   lookUpMax: lookUpMax,
   lookUpMin: lookUpMin,
   checkWhichPlayer: checkWhichPlayer,
+  nextMovePathStatePair: nextMovePathStatePair,
+  bottomState: bottomState,
+  minimax: minimax,
   nextMove: nextMove,
   playerName: playerName
 };

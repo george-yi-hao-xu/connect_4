@@ -81,62 +81,108 @@ module AIPlayer = (MyGame: Game) => {
    * Output: whichPlayer, P1 or P2, so that I can know look for min or max
    */
   let checkWhichPlayer: PlayerGame.state => PlayerGame.whichPlayer =
-    inState => switch(PlayerGame.gameStatus(inState)){
+    inState =>
+      switch (PlayerGame.gameStatus(inState)) {
       | Ongoing(currentPlayer) => currentPlayer
       | Win(currentPlayer) => currentPlayer
       | Draw => failwith("error: game over")
-    };
+      };
   /* nextAllLegalMovesVal:
-   * Input: inState; 
+   * Input: inState;
    * Output: list((PlayerGame.move, float)). next step's move and the corresponding estimated value
    *  type movePath = list(PlayerGame.move);
    */
-  let nextAllLegalMovePathVal: PlayerGame.state => list((movePath, float)) =
+  let nextMovePathStatePair: PlayerGame.state => list((movePath, state)) =
     s => {
       /* simple version;
          List.hd(PlayerGame.legalMoves(s));*/
-      let nextLegalMoves: list(move) = PlayerGame.legalMoves(s); // get all the legal moves
+      let nextLegalMoves: list(movePath) =
+        List.map(elem => [elem], PlayerGame.legalMoves(s)); // get all the legal moves
       let nextStates: list(state) =
-        List.map(move => PlayerGame.nextState(s, move), nextLegalMoves); // get the next state; this is emeny's value
-      let nextEstValues: list(float) =
-        List.map(state => PlayerGame.estimateValue(state), nextStates); // get the estimated value
-      let nextMoveVal: list((movePath, float)) =
-        pair2lists([nextLegalMoves], nextEstValues); // pair the move with the float value
-      nextMoveVal;
-  };
-  /* rootValues:
-   * Input: inState, depth; 
-   * Output: list(float), all the estimated value of 
-   */
-  let rootValues: (PlayerGame.state, int) => list((movePath, float)) = {
-    (inState,depth) => switch(depth){
-      | 1 =>                                 // itself? no value
-      | 3 => nextAllLegalMovePathVal(inState)
-      | n =>  nextAllLegalMovePathVal(inState)// does it inclued enemy's move, I guess so
-    }
-  };
-  let minimaxHelper: (PlayerGame.state, int, movePath) => PlayerGame.move =
-    (s, depth) => switch(depth){
-      | 1 => failwith("error: cannot look for itself") // itself? no value
-      | n => switch(checkWhichPlayer(s)){
-          | P1 => lookUpMax(rootValues(s,n))
-          | P2 => lookUpMin(rootValues(s,n))
-          }
-      // in the end, get the best movePATH, but just need get the List.hd(movePath)
-    }
-  let nextMove: PlayerGame.state => PlayerGame.move =
-    {
-      // nextStates. rec on nextLegalMoves => next-nextStates => estimatedValue of next-nextStates => min/max => move path
-      // not a tree. but a tuple? (list(move), estimatedValue, depth), but the enemy move inclued?
-      switch(checkWhichPlayer(s)){
-        | P1 => lookUpMax(nextMoveVal) // ? now looking for the enemy value or minimax only odd number; like 3; look for next again?
-        | P2 => lookUpMin(nextMoveVal)
-      }
-      // lookUpMin(nextMoveVal); // now in R3Human2AI.playGame() the AI is P2
+        List.map(
+          movePath => PlayerGame.nextState(s, List.hd(movePath)),
+          nextLegalMoves,
+        ); // get the next state; this is emeny's value
+      // let nextEstValues: list(float) = List.map(state => PlayerGame.estimateValue(state), nextStates); // get the estimated value
+      let nextMovePathState: list((movePath, state)) =
+        pair2lists(nextLegalMoves, nextStates); // pair the move with the float value
+      nextMovePathState;
     };
-
+  /* bottomValues:
+   * Input: inState, depth;
+   * Output: list((movePath, PlayerGame.state)).
+   */
+  let rec bottomState:
+    (PlayerGame.state, int) => list((movePath, PlayerGame.state)) = {
+    let rec chainMovePathStatePair:
+      (
+        list((movePath, PlayerGame.state)),
+        list((movePath, PlayerGame.state))
+      ) =>
+      list((movePath, PlayerGame.state)) =
+      (previousMovePathState, newNextMovePathStatePair) =>
+        switch (previousMovePathState, newNextMovePathStatePair) {
+        | ([(preMovePathHd, _)], [(newMovePathHd, newStateHd)]) => [
+            (preMovePathHd @ newMovePathHd, newStateHd),
+          ] // Base Case
+        | (
+            [(preMovePathHd, _), ...preTl],
+            [(newMovePathHd, newStateHd), ...newTl],
+          ) => [
+            // keep the newStateHd, since we are only looking for the bottom
+            // append the movePath, since we need all the path, not just the new bottom ones
+            (preMovePathHd @ newMovePathHd, newStateHd),
+            ...chainMovePathStatePair(preTl, newTl),
+          ]
+        | _ => failwith("error: chainMovePathStatePair")
+        };
+    (inState, depth) =>
+      switch (depth) {
+      | 1 => [([], inState)]
+      | 2 => nextMovePathStatePair(inState)
+      | n =>
+        let previousMovePathState: list((movePath, PlayerGame.state)) =
+          bottomState(inState, n - 1);
+        // like [([L, ???], [R, ???])]
+        // let newLegalMoves: list(move) = PlayerGame.legalMoves(inState);
+        let newNextMovePathStatePair: list((movePath, PlayerGame.state)) =
+          nextMovePathStatePair(inState);
+        chainMovePathStatePair(
+          previousMovePathState,
+          newNextMovePathStatePair,
+        ); // end n => {}
+      }; // end switch case
+  }; // end
+  let minimax: (PlayerGame.state, int) => PlayerGame.move =
+    (s, depth) =>
+      switch (depth) {
+      | 1 => failwith("error: cannot look for itself") // itself? no value
+      | _ =>
+        let thisBottomState: list((movePath, PlayerGame.state)) =
+          bottomState(s, depth);
+        let thisBottomEstval: list((movePath, float)) =
+          List.map(
+            pair => {
+              switch (pair) {
+              | (movePath, state) => (
+                  movePath,
+                  PlayerGame.estimateValue(state),
+                )
+              }
+            },
+            thisBottomState,
+          );
+        switch (checkWhichPlayer(s)) {
+        | P1 => List.hd(lookUpMax(thisBottomEstval))
+        // list((movePath, float)) -> movePath (list(move)) -> move
+        | P2 => List.hd(lookUpMin(thisBottomEstval))
+        }; // end switch case on checkWhichPlayer(s)
+      // end case n => ...
+      // in the end, get the best movePATH, but just need get the List.hd(movePath)
+      }; // end switch case on the input
+  let nextMove: PlayerGame.state => PlayerGame.move = s => minimax(s, 3); // miniman w/ depth of 3
   /* put your team name here! */
-  let playerName = "";
+  let playerName = "TopG";
 };
 
 module TestGame = Connect4.Connect4;
