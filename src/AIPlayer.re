@@ -6,6 +6,7 @@ module AIPlayer = (MyGame: Game) => {
   /* TODO */
   open PlayerGame;
   type movePath = list(PlayerGame.move);
+
   /*  pair2lists
    *  Input: listA with type list('a), listB with type list('b)
    *  Output: a list of pairs. Each pair has the type ('a,'b)
@@ -26,6 +27,7 @@ module AIPlayer = (MyGame: Game) => {
     [("Tom", 1.0), ("Jacky", 2.0), ("John", 3.0)],
     "check for pair2lists 01 (AIPlayer)",
   );
+
   /* lookUpMax:
    * Input: alop, a list of pairs, with type('a, float)
    * Output: 'a, the item w/ largets float number
@@ -54,6 +56,7 @@ module AIPlayer = (MyGame: Game) => {
     "Tom",
     "check for lookUpMax in AIPlayer",
   );
+
   /* lookUpMin:
    * Input: alop, a list of pairs, with type('a, float)
    * Output: 'a, the item w/ smallest float number
@@ -76,6 +79,7 @@ module AIPlayer = (MyGame: Game) => {
     "Jacky",
     "check for lookUpMin in AIPlayer",
   );
+
   /* checkWhichPlayer:
    * Input: inState, the state of the game
    * Output: whichPlayer, P1 or P2, so that I can know look for min or max
@@ -87,12 +91,14 @@ module AIPlayer = (MyGame: Game) => {
       | Win(currentPlayer) => currentPlayer
       | Draw => failwith("error: game over")
       };
+
   /* nextAllLegalMovesVal:
    * Input: inState;
    * Output: list((PlayerGame.move, float)). next step's move and the corresponding estimated value
    *  type movePath = list(PlayerGame.move);
    */
-  let nextMovePathStatePair: PlayerGame.state => list((movePath, state)) =
+  let nextMovePathStatePair:
+    PlayerGame.state => list((movePath, PlayerGame.state)) =
     s => {
       /* simple version;
          List.hd(PlayerGame.legalMoves(s));*/
@@ -108,51 +114,76 @@ module AIPlayer = (MyGame: Game) => {
         pair2lists(nextLegalMoves, nextStates); // pair the move with the float value
       nextMovePathState;
     };
+
+  let pairToState: ((movePath, PlayerGame.state)) => PlayerGame.state =
+    input =>
+      switch (input) {
+      | (_, s) => s
+      };
+
   /* bottomValues:
    * Input: inState, depth;
    * Output: list((movePath, PlayerGame.state)).
    */
   let rec bottomState:
     (PlayerGame.state, int) => list((movePath, PlayerGame.state)) = {
-    let rec chainMovePathStatePair:
-      (
-        list((movePath, PlayerGame.state)),
-        list((movePath, PlayerGame.state))
-      ) =>
-      list((movePath, PlayerGame.state)) =
+    // helper proc
+    /* chainMovePathStatePair:
+     * Input: pair, pair;
+     * Output: pair. ignore the previous state and chain the movePath
+     */
+    let chainMovePathStatePair:
+      ((movePath, PlayerGame.state), (movePath, PlayerGame.state)) =>
+      (movePath, PlayerGame.state) =
       (previousMovePathState, newNextMovePathStatePair) =>
         switch (previousMovePathState, newNextMovePathStatePair) {
-        | ([(preMovePathHd, _)], [(newMovePathHd, newStateHd)]) => [
-            (preMovePathHd @ newMovePathHd, newStateHd),
-          ] // Base Case
-        | (
-            [(preMovePathHd, _), ...preTl],
-            [(newMovePathHd, newStateHd), ...newTl],
-          ) => [
-            // keep the newStateHd, since we are only looking for the bottom
-            // append the movePath, since we need all the path, not just the new bottom ones
-            (preMovePathHd @ newMovePathHd, newStateHd),
-            ...chainMovePathStatePair(preTl, newTl),
-          ]
-        | _ => failwith("error: chainMovePathStatePair")
+        | ((preMovePathHd, _), (newMovePathHd, newStateHd)) => (
+            preMovePathHd @ newMovePathHd,
+            newStateHd,
+          )
         };
     (inState, depth) =>
       switch (depth) {
-      | 1 => [([], inState)]
-      | 2 => nextMovePathStatePair(inState)
+      | 1 => [([], inState)] // list((movePath, PlayerGame.state))
       | n =>
         let previousMovePathState: list((movePath, PlayerGame.state)) =
-          bottomState(inState, n - 1);
+          bottomState(inState, n - 1); //RO
+        // help proc
+        /* chainPreNewMovePathState:
+         * Input: pair, list(pair);
+         * Output: list(pair).
+         */
+        let chainPreNewMovePathState:
+          (
+            (movePath, PlayerGame.state),
+            list((movePath, PlayerGame.state))
+          ) =>
+          list((movePath, PlayerGame.state)) = (
+          (prePair, alop) =>
+            List.map(
+              newPair => chainMovePathStatePair(prePair, newPair),
+              alop,
+            )
+        );
         // like [([L, ???], [R, ???])]
         // let newLegalMoves: list(move) = PlayerGame.legalMoves(inState);
-        let newNextMovePathStatePair: list((movePath, PlayerGame.state)) =
-          nextMovePathStatePair(inState);
-        chainMovePathStatePair(
-          previousMovePathState,
-          newNextMovePathStatePair,
-        ); // end n => {}
+        let chainedPairTree: list(list((movePath, PlayerGame.state))) =
+          List.map(
+            prePair =>
+              chainPreNewMovePathState(
+                prePair,
+                nextMovePathStatePair(pairToState(prePair)) // list of list
+              ),
+            previousMovePathState,
+          );
+        List.flatten(chainedPairTree); // end case n
       }; // end switch case
-  }; // end
+  }; // end bottom value
+
+  /* minimax:
+   * Input: s, depth;
+   * Output: move. find the best move based on the state and the depth
+   */
   let minimax: (PlayerGame.state, int) => PlayerGame.move =
     (s, depth) =>
       switch (depth) {
@@ -160,6 +191,7 @@ module AIPlayer = (MyGame: Game) => {
       | _ =>
         let thisBottomState: list((movePath, PlayerGame.state)) =
           bottomState(s, depth);
+        // convert from (movePath, state) to (movePath, float)
         let thisBottomEstval: list((movePath, float)) =
           List.map(
             pair => {
@@ -180,6 +212,7 @@ module AIPlayer = (MyGame: Game) => {
       // end case n => ...
       // in the end, get the best movePATH, but just need get the List.hd(movePath)
       }; // end switch case on the input
+
   let nextMove: PlayerGame.state => PlayerGame.move = s => minimax(s, 3); // miniman w/ depth of 3
   /* put your team name here! */
   let playerName = "TopG";

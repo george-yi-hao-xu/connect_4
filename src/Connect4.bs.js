@@ -496,21 +496,50 @@ CS17SetupGame$Game_project.checkExpect(isCloneList({
           }
         }), false, "check for isCloneList 02");
 
-function countChainInAColumn(_inColumn, inPlace, chainNum) {
+function isChainInAColumn(_inColumn, inPlace, chainNum) {
   while(true) {
     var inColumn = _inColumn;
     if (List.length(inColumn) < chainNum) {
-      return 0;
+      return false;
     }
-    if (List.hd(inColumn) === inPlace && isCloneList(getHds(inColumn, chainNum))) {
-      return 1 + countChainInAColumn(cullHds(inColumn, chainNum), inPlace, chainNum) | 0;
+    if (List.hd(inColumn) === inPlace) {
+      if (isCloneList(getHds(inColumn, chainNum))) {
+        return true;
+      }
+      _inColumn = List.tl(inColumn);
+      continue ;
     }
     _inColumn = List.tl(inColumn);
     continue ;
   };
 }
 
-CS17SetupGame$Game_project.checkExpect(countChainInAColumn({
+CS17SetupGame$Game_project.checkExpect(isChainInAColumn({
+          hd: /* None */2,
+          tl: {
+            hd: /* None */2,
+            tl: {
+              hd: /* None */2,
+              tl: /* [] */0
+            }
+          }
+        }, /* Red */0, 4), false, "check for isChainInAColumn");
+
+function countOpenChainInAColumn(_inColumn, inPlace, chainNum) {
+  while(true) {
+    var inColumn = _inColumn;
+    if (List.length(inColumn) < chainNum) {
+      return 0;
+    }
+    if (List.hd(inColumn) === inPlace && isCloneList(getHds(inColumn, chainNum))) {
+      return 1 + countOpenChainInAColumn(cullHds(inColumn, chainNum), inPlace, chainNum) | 0;
+    }
+    _inColumn = List.tl(inColumn);
+    continue ;
+  };
+}
+
+CS17SetupGame$Game_project.checkExpect(countOpenChainInAColumn({
           hd: /* None */2,
           tl: {
             hd: /* Red */0,
@@ -521,7 +550,7 @@ CS17SetupGame$Game_project.checkExpect(countChainInAColumn({
           }
         }, /* Red */0, 2), 1, "check for countChainInAColumn 01");
 
-CS17SetupGame$Game_project.checkExpect(countChainInAColumn({
+CS17SetupGame$Game_project.checkExpect(countOpenChainInAColumn({
           hd: /* None */2,
           tl: {
             hd: /* Red */0,
@@ -538,20 +567,189 @@ CS17SetupGame$Game_project.checkExpect(countChainInAColumn({
           }
         }, /* Red */0, 2), 2, "check for countChainInAColumn 02");
 
-function countVerticalChainInAMatrix(inMatrix, inplace, chainNum) {
+function isVerticalChainInAMatrix(_inMatrix, inplace, chainNum) {
+  while(true) {
+    var inMatrix = _inMatrix;
+    if (!inMatrix) {
+      return Pervasives.failwith("error: isChainInAMatrixRough");
+    }
+    var coltl = inMatrix.tl;
+    var aCol = inMatrix.hd;
+    if (!coltl) {
+      return isChainInAColumn(aCol, inplace, chainNum);
+    }
+    if (isChainInAColumn(aCol, inplace, chainNum)) {
+      return true;
+    }
+    _inMatrix = coltl;
+    continue ;
+  };
+}
+
+CS17SetupGame$Game_project.checkExpect(isVerticalChainInAMatrix({
+          hd: {
+            hd: /* None */2,
+            tl: {
+              hd: /* None */2,
+              tl: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* Red */0,
+                    tl: /* [] */0
+                  }
+                }
+              }
+            }
+          },
+          tl: {
+            hd: {
+              hd: /* None */2,
+              tl: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* Red */0,
+                      tl: /* [] */0
+                    }
+                  }
+                }
+              }
+            },
+            tl: {
+              hd: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* None */2,
+                      tl: {
+                        hd: /* Red */0,
+                        tl: /* [] */0
+                      }
+                    }
+                  }
+                }
+              },
+              tl: {
+                hd: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* None */2,
+                      tl: {
+                        hd: /* None */2,
+                        tl: {
+                          hd: /* Red */0,
+                          tl: /* [] */0
+                        }
+                      }
+                    }
+                  }
+                },
+                tl: /* [] */0
+              }
+            }
+          }
+        }, /* Red */0, 4), false, "check for isVerticalChainInAMatrix");
+
+CS17SetupGame$Game_project.checkExpect(isVerticalChainInAMatrix({
+          hd: {
+            hd: /* None */2,
+            tl: {
+              hd: /* Red */0,
+              tl: {
+                hd: /* Red */0,
+                tl: {
+                  hd: /* Red */0,
+                  tl: {
+                    hd: /* Red */0,
+                    tl: /* [] */0
+                  }
+                }
+              }
+            }
+          },
+          tl: {
+            hd: {
+              hd: /* None */2,
+              tl: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* Red */0,
+                      tl: /* [] */0
+                    }
+                  }
+                }
+              }
+            },
+            tl: /* [] */0
+          }
+        }, /* Red */0, 4), true, "check for isVerticalChainInAMatrix");
+
+CS17SetupGame$Game_project.checkExpect(isVerticalChainInAMatrix({
+          hd: {
+            hd: /* None */2,
+            tl: {
+              hd: /* Red */0,
+              tl: {
+                hd: /* Red */0,
+                tl: {
+                  hd: /* Red */0,
+                  tl: {
+                    hd: /* Red */0,
+                    tl: /* [] */0
+                  }
+                }
+              }
+            }
+          },
+          tl: {
+            hd: {
+              hd: /* None */2,
+              tl: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* Red */0,
+                      tl: /* [] */0
+                    }
+                  }
+                }
+              }
+            },
+            tl: /* [] */0
+          }
+        }, /* Yellow */1, 4), false, "check for isVerticalChainInAMatrix");
+
+function countOpenVerticalChainInAMatrix(inMatrix, inplace, chainNum) {
   if (!inMatrix) {
     return Pervasives.failwith("error: isChainInAMatrixRough");
   }
   var coltl = inMatrix.tl;
   var aCol = inMatrix.hd;
   if (coltl) {
-    return countChainInAColumn(aCol, inplace, chainNum) + countVerticalChainInAMatrix(coltl, inplace, chainNum) | 0;
+    return countOpenChainInAColumn(aCol, inplace, chainNum) + countOpenVerticalChainInAMatrix(coltl, inplace, chainNum) | 0;
   } else {
-    return countChainInAColumn(aCol, inplace, chainNum);
+    return countOpenChainInAColumn(aCol, inplace, chainNum);
   }
 }
 
-CS17SetupGame$Game_project.checkExpect(countVerticalChainInAMatrix({
+CS17SetupGame$Game_project.checkExpect(countOpenVerticalChainInAMatrix({
           hd: {
             hd: /* None */2,
             tl: {
@@ -589,7 +787,7 @@ CS17SetupGame$Game_project.checkExpect(countVerticalChainInAMatrix({
           }
         }, /* Red */0, 4), 2, "check for countVerticalChainInAMatrix 01");
 
-CS17SetupGame$Game_project.checkExpect(countVerticalChainInAMatrix({
+CS17SetupGame$Game_project.checkExpect(countOpenVerticalChainInAMatrix({
           hd: {
             hd: /* None */2,
             tl: {
@@ -627,8 +825,234 @@ CS17SetupGame$Game_project.checkExpect(countVerticalChainInAMatrix({
           }
         }, /* Red */0, 3), 2, "check for countVerticalChainInAMatrix 02");
 
+function isHorizontalChainInAMatrix(inMatrix, inplace, chainNum) {
+  return isVerticalChainInAMatrix(transpose(inMatrix), inplace, chainNum);
+}
+
+CS17SetupGame$Game_project.checkExpect(isHorizontalChainInAMatrix({
+          hd: {
+            hd: /* None */2,
+            tl: {
+              hd: /* None */2,
+              tl: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* Red */0,
+                    tl: /* [] */0
+                  }
+                }
+              }
+            }
+          },
+          tl: {
+            hd: {
+              hd: /* None */2,
+              tl: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* Red */0,
+                      tl: /* [] */0
+                    }
+                  }
+                }
+              }
+            },
+            tl: {
+              hd: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* None */2,
+                      tl: {
+                        hd: /* Red */0,
+                        tl: /* [] */0
+                      }
+                    }
+                  }
+                }
+              },
+              tl: {
+                hd: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* None */2,
+                      tl: {
+                        hd: /* None */2,
+                        tl: {
+                          hd: /* Red */0,
+                          tl: /* [] */0
+                        }
+                      }
+                    }
+                  }
+                },
+                tl: /* [] */0
+              }
+            }
+          }
+        }, /* Red */0, 4), true, "check for isHorizontalChainInAMatrix 01");
+
+CS17SetupGame$Game_project.checkExpect(isHorizontalChainInAMatrix({
+          hd: {
+            hd: /* None */2,
+            tl: {
+              hd: /* None */2,
+              tl: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: /* [] */0
+                  }
+                }
+              }
+            }
+          },
+          tl: {
+            hd: {
+              hd: /* None */2,
+              tl: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* Red */0,
+                      tl: /* [] */0
+                    }
+                  }
+                }
+              }
+            },
+            tl: {
+              hd: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* None */2,
+                      tl: {
+                        hd: /* Red */0,
+                        tl: /* [] */0
+                      }
+                    }
+                  }
+                }
+              },
+              tl: {
+                hd: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* None */2,
+                      tl: {
+                        hd: /* None */2,
+                        tl: {
+                          hd: /* Red */0,
+                          tl: /* [] */0
+                        }
+                      }
+                    }
+                  }
+                },
+                tl: /* [] */0
+              }
+            }
+          }
+        }, /* Red */0, 4), false, "check for isHorizontalChainInAMatrix 02");
+
+CS17SetupGame$Game_project.checkExpect(isHorizontalChainInAMatrix({
+          hd: {
+            hd: /* None */2,
+            tl: {
+              hd: /* None */2,
+              tl: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: /* [] */0
+                  }
+                }
+              }
+            }
+          },
+          tl: {
+            hd: {
+              hd: /* None */2,
+              tl: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* Yellow */1,
+                      tl: /* [] */0
+                    }
+                  }
+                }
+              }
+            },
+            tl: {
+              hd: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* None */2,
+                      tl: {
+                        hd: /* Yellow */1,
+                        tl: /* [] */0
+                      }
+                    }
+                  }
+                }
+              },
+              tl: {
+                hd: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* None */2,
+                      tl: {
+                        hd: /* None */2,
+                        tl: {
+                          hd: /* Red */0,
+                          tl: /* [] */0
+                        }
+                      }
+                    }
+                  }
+                },
+                tl: /* [] */0
+              }
+            }
+          }
+        }, /* Yellow */1, 4), false, "check for isHorizontalChainInAMatrix 03");
+
 function countHorizontalChainInAMatrix(inMatrix, inplace, chainNum) {
-  return countVerticalChainInAMatrix(transpose(inMatrix), inplace, chainNum);
+  return countOpenVerticalChainInAMatrix(transpose(inMatrix), inplace, chainNum);
 }
 
 CS17SetupGame$Game_project.checkExpect(countHorizontalChainInAMatrix({
@@ -705,11 +1129,237 @@ CS17SetupGame$Game_project.checkExpect(countHorizontalChainInAMatrix({
           }
         }, /* Red */0, 4), 1, "check for countHorizontalChainInAMatrix 01");
 
-function countDiagonalChainInAMatrix(inMatrix, inplace, chainNum) {
-  return countVerticalChainInAMatrix(allDiagonal(inMatrix), inplace, chainNum);
+function isDiagonalChainInAMatrix(inMatrix, inplace, chainNum) {
+  return isVerticalChainInAMatrix(allDiagonal(inMatrix), inplace, chainNum);
 }
 
-CS17SetupGame$Game_project.checkExpect(countDiagonalChainInAMatrix({
+CS17SetupGame$Game_project.checkExpect(isDiagonalChainInAMatrix({
+          hd: {
+            hd: /* None */2,
+            tl: {
+              hd: /* Red */0,
+              tl: {
+                hd: /* Yellow */1,
+                tl: {
+                  hd: /* Yellow */1,
+                  tl: {
+                    hd: /* Yellow */1,
+                    tl: /* [] */0
+                  }
+                }
+              }
+            }
+          },
+          tl: {
+            hd: {
+              hd: /* None */2,
+              tl: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* Red */0,
+                  tl: {
+                    hd: /* Yellow */1,
+                    tl: {
+                      hd: /* Yellow */1,
+                      tl: /* [] */0
+                    }
+                  }
+                }
+              }
+            },
+            tl: {
+              hd: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* Red */0,
+                      tl: {
+                        hd: /* Yellow */1,
+                        tl: /* [] */0
+                      }
+                    }
+                  }
+                }
+              },
+              tl: {
+                hd: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* None */2,
+                      tl: {
+                        hd: /* None */2,
+                        tl: {
+                          hd: /* Red */0,
+                          tl: /* [] */0
+                        }
+                      }
+                    }
+                  }
+                },
+                tl: /* [] */0
+              }
+            }
+          }
+        }, /* Red */0, 4), true, "check for isDiagonalChainInAMatrix 01");
+
+CS17SetupGame$Game_project.checkExpect(isDiagonalChainInAMatrix({
+          hd: {
+            hd: /* None */2,
+            tl: {
+              hd: /* Red */0,
+              tl: {
+                hd: /* Yellow */1,
+                tl: {
+                  hd: /* Yellow */1,
+                  tl: {
+                    hd: /* Yellow */1,
+                    tl: /* [] */0
+                  }
+                }
+              }
+            }
+          },
+          tl: {
+            hd: {
+              hd: /* None */2,
+              tl: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* Yellow */1,
+                  tl: {
+                    hd: /* Yellow */1,
+                    tl: {
+                      hd: /* Yellow */1,
+                      tl: /* [] */0
+                    }
+                  }
+                }
+              }
+            },
+            tl: {
+              hd: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* Red */0,
+                      tl: {
+                        hd: /* Yellow */1,
+                        tl: /* [] */0
+                      }
+                    }
+                  }
+                }
+              },
+              tl: {
+                hd: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* None */2,
+                      tl: {
+                        hd: /* None */2,
+                        tl: {
+                          hd: /* Red */0,
+                          tl: /* [] */0
+                        }
+                      }
+                    }
+                  }
+                },
+                tl: /* [] */0
+              }
+            }
+          }
+        }, /* Red */0, 4), false, "check for isDiagonalChainInAMatrix 02");
+
+CS17SetupGame$Game_project.checkExpect(isDiagonalChainInAMatrix({
+          hd: {
+            hd: /* None */2,
+            tl: {
+              hd: /* Red */0,
+              tl: {
+                hd: /* Yellow */1,
+                tl: {
+                  hd: /* Yellow */1,
+                  tl: {
+                    hd: /* Red */0,
+                    tl: /* [] */0
+                  }
+                }
+              }
+            }
+          },
+          tl: {
+            hd: {
+              hd: /* None */2,
+              tl: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* Red */0,
+                  tl: {
+                    hd: /* Red */0,
+                    tl: {
+                      hd: /* Yellow */1,
+                      tl: /* [] */0
+                    }
+                  }
+                }
+              }
+            },
+            tl: {
+              hd: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* Red */0,
+                    tl: {
+                      hd: /* Yellow */1,
+                      tl: {
+                        hd: /* Yellow */1,
+                        tl: /* [] */0
+                      }
+                    }
+                  }
+                }
+              },
+              tl: {
+                hd: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* Red */0,
+                    tl: {
+                      hd: /* Yellow */1,
+                      tl: {
+                        hd: /* Yellow */1,
+                        tl: {
+                          hd: /* Red */0,
+                          tl: /* [] */0
+                        }
+                      }
+                    }
+                  }
+                },
+                tl: /* [] */0
+              }
+            }
+          }
+        }, /* Red */0, 4), true, "check for isDiagonalChainInAMatrix 03");
+
+function countOpenDiagonalChainInAMatrix(inMatrix, inplace, chainNum) {
+  return countOpenVerticalChainInAMatrix(allDiagonal(inMatrix), inplace, chainNum);
+}
+
+CS17SetupGame$Game_project.checkExpect(countOpenDiagonalChainInAMatrix({
           hd: {
             hd: /* None */2,
             tl: {
@@ -783,8 +1433,16 @@ CS17SetupGame$Game_project.checkExpect(countDiagonalChainInAMatrix({
           }
         }, /* Red */0, 4), 1, "check for countDiagonalChainInAMatrix 01");
 
-function countChainInAMatrix(inMatrix, inplace, chainNum) {
-  return (countVerticalChainInAMatrix(inMatrix, inplace, chainNum) + countHorizontalChainInAMatrix(inMatrix, inplace, chainNum) | 0) + countDiagonalChainInAMatrix(inMatrix, inplace, chainNum) | 0;
+function isChainInAMatrix(inMatrix, inplace, chainNum) {
+  if (isVerticalChainInAMatrix(inMatrix, inplace, chainNum) || isHorizontalChainInAMatrix(inMatrix, inplace, chainNum)) {
+    return true;
+  } else {
+    return isDiagonalChainInAMatrix(inMatrix, inplace, chainNum);
+  }
+}
+
+function countOpenChainInAMatrix(inMatrix, inplace, chainNum) {
+  return (countOpenVerticalChainInAMatrix(inMatrix, inplace, chainNum) + countHorizontalChainInAMatrix(inMatrix, inplace, chainNum) | 0) + countOpenDiagonalChainInAMatrix(inMatrix, inplace, chainNum) | 0;
 }
 
 function nextStateHelper(inMatrix, inNum, whichPlayer) {
@@ -993,15 +1651,381 @@ CS17SetupGame$Game_project.checkExpect(nextStateHelper({
       }
     }, "check for nextStateHelper 03");
 
-function countChain(inMatrix, inPlayer, chainNum) {
+function checkChain(inMatrix, inPlayer, chainNum) {
   if (inPlayer) {
-    return countChainInAMatrix(inMatrix, /* Yellow */1, chainNum);
+    return isChainInAMatrix(inMatrix, /* Yellow */1, chainNum);
   } else {
-    return countChainInAMatrix(inMatrix, /* Red */0, chainNum);
+    return isChainInAMatrix(inMatrix, /* Red */0, chainNum);
   }
 }
 
-CS17SetupGame$Game_project.checkExpect(countChainInAMatrix({
+CS17SetupGame$Game_project.checkExpect(isChainInAMatrix({
+          hd: {
+            hd: /* None */2,
+            tl: {
+              hd: /* None */2,
+              tl: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: /* [] */0
+                  }
+                }
+              }
+            }
+          },
+          tl: {
+            hd: {
+              hd: /* None */2,
+              tl: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* Red */0,
+                      tl: /* [] */0
+                    }
+                  }
+                }
+              }
+            },
+            tl: {
+              hd: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* None */2,
+                      tl: {
+                        hd: /* Red */0,
+                        tl: /* [] */0
+                      }
+                    }
+                  }
+                }
+              },
+              tl: {
+                hd: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* None */2,
+                      tl: {
+                        hd: /* None */2,
+                        tl: {
+                          hd: /* Red */0,
+                          tl: /* [] */0
+                        }
+                      }
+                    }
+                  }
+                },
+                tl: /* [] */0
+              }
+            }
+          }
+        }, /* Red */0, 4), false, "check for checkChain 01");
+
+CS17SetupGame$Game_project.checkExpect(isChainInAMatrix({
+          hd: {
+            hd: /* None */2,
+            tl: {
+              hd: /* None */2,
+              tl: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* Red */0,
+                    tl: /* [] */0
+                  }
+                }
+              }
+            }
+          },
+          tl: {
+            hd: {
+              hd: /* None */2,
+              tl: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* Red */0,
+                      tl: /* [] */0
+                    }
+                  }
+                }
+              }
+            },
+            tl: {
+              hd: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* None */2,
+                      tl: {
+                        hd: /* Red */0,
+                        tl: /* [] */0
+                      }
+                    }
+                  }
+                }
+              },
+              tl: {
+                hd: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* None */2,
+                      tl: {
+                        hd: /* None */2,
+                        tl: {
+                          hd: /* Red */0,
+                          tl: /* [] */0
+                        }
+                      }
+                    }
+                  }
+                },
+                tl: /* [] */0
+              }
+            }
+          }
+        }, /* Red */0, 4), true, "check for checkChain 02");
+
+CS17SetupGame$Game_project.checkExpect(isChainInAMatrix({
+          hd: {
+            hd: /* Red */0,
+            tl: {
+              hd: /* None */2,
+              tl: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: /* [] */0
+                }
+              }
+            }
+          },
+          tl: {
+            hd: {
+              hd: /* Yellow */1,
+              tl: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: /* [] */0
+                  }
+                }
+              }
+            },
+            tl: {
+              hd: {
+                hd: /* Red */0,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* None */2,
+                      tl: /* [] */0
+                    }
+                  }
+                }
+              },
+              tl: {
+                hd: {
+                  hd: /* Red */0,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* None */2,
+                      tl: {
+                        hd: /* None */2,
+                        tl: /* [] */0
+                      }
+                    }
+                  }
+                },
+                tl: /* [] */0
+              }
+            }
+          }
+        }, /* Red */0, 4), false, "check for checkChain 02-2");
+
+CS17SetupGame$Game_project.checkExpect(isChainInAMatrix({
+          hd: {
+            hd: /* None */2,
+            tl: {
+              hd: /* None */2,
+              tl: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: /* [] */0
+                  }
+                }
+              }
+            }
+          },
+          tl: {
+            hd: {
+              hd: /* None */2,
+              tl: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* None */2,
+                      tl: /* [] */0
+                    }
+                  }
+                }
+              }
+            },
+            tl: {
+              hd: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* None */2,
+                      tl: {
+                        hd: /* Red */0,
+                        tl: /* [] */0
+                      }
+                    }
+                  }
+                }
+              },
+              tl: {
+                hd: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* None */2,
+                      tl: {
+                        hd: /* Yellow */1,
+                        tl: {
+                          hd: /* Red */0,
+                          tl: /* [] */0
+                        }
+                      }
+                    }
+                  }
+                },
+                tl: /* [] */0
+              }
+            }
+          }
+        }, /* Red */0, 4), false, "check for checkChain 03");
+
+CS17SetupGame$Game_project.checkExpect(isChainInAMatrix({
+          hd: {
+            hd: /* None */2,
+            tl: {
+              hd: /* None */2,
+              tl: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: /* [] */0
+                  }
+                }
+              }
+            }
+          },
+          tl: {
+            hd: {
+              hd: /* None */2,
+              tl: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* None */2,
+                      tl: /* [] */0
+                    }
+                  }
+                }
+              }
+            },
+            tl: {
+              hd: {
+                hd: /* None */2,
+                tl: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* Yellow */1,
+                      tl: {
+                        hd: /* Red */0,
+                        tl: /* [] */0
+                      }
+                    }
+                  }
+                }
+              },
+              tl: {
+                hd: {
+                  hd: /* None */2,
+                  tl: {
+                    hd: /* None */2,
+                    tl: {
+                      hd: /* Red */0,
+                      tl: {
+                        hd: /* Red */0,
+                        tl: {
+                          hd: /* Red */0,
+                          tl: /* [] */0
+                        }
+                      }
+                    }
+                  }
+                },
+                tl: /* [] */0
+              }
+            }
+          }
+        }, /* Red */0, 4), false, "check for checkChain 04");
+
+function countChain(inMatrix, inPlayer, chainNum) {
+  if (inPlayer) {
+    return countOpenChainInAMatrix(inMatrix, /* Yellow */1, chainNum);
+  } else {
+    return countOpenChainInAMatrix(inMatrix, /* Red */0, chainNum);
+  }
+}
+
+CS17SetupGame$Game_project.checkExpect(countOpenChainInAMatrix({
           hd: {
             hd: /* None */2,
             tl: {
@@ -1075,7 +2099,7 @@ CS17SetupGame$Game_project.checkExpect(countChainInAMatrix({
           }
         }, /* Red */0, 3), 2, "check for countChain 01");
 
-CS17SetupGame$Game_project.checkExpect(countChainInAMatrix({
+CS17SetupGame$Game_project.checkExpect(countOpenChainInAMatrix({
           hd: {
             hd: /* None */2,
             tl: {
@@ -1160,7 +2184,7 @@ function nextState(inState, inMove) {
   var inMatrix = inState._1;
   var inPlayer$1 = inPlayer._0;
   var newMatrix = nextStateHelper(inMatrix, inMove._0, inPlayer$1);
-  if (countChain(newMatrix, inPlayer$1, 4) > 0) {
+  if (checkChain(newMatrix, inPlayer$1, 4)) {
     return /* State */{
             _0: {
               TAG: /* Win */0,
@@ -1429,15 +2453,18 @@ function estimateValue(inState) {
   if (inPlayer.TAG === /* Win */0) {
     return 0.0;
   }
+  var inMatrix = inState._1;
   var inPlayer$1 = inPlayer._0;
-  if (countChain(inState._1, inPlayer$1, 4) > 0) {
+  if (checkChain(inMatrix, inPlayer$1, 4)) {
     if (inPlayer$1) {
-      return -100.0;
+      return -1000.0;
     } else {
-      return 100.0;
+      return 1000.0;
     }
+  } else if (inPlayer$1) {
+    return -1.0 * (countOpenChainInAMatrix(inMatrix, /* Yellow */1, 3) + 0.5 * countOpenChainInAMatrix(inMatrix, /* Yellow */1, 2) + 0.25 * countOpenChainInAMatrix(inMatrix, /* Yellow */1, 1));
   } else {
-    return 0.0;
+    return countOpenChainInAMatrix(inMatrix, /* Red */0, 3) + 0.5 * countOpenChainInAMatrix(inMatrix, /* Red */0, 2) + 0.25 * countOpenChainInAMatrix(inMatrix, /* Red */0, 1);
   }
 }
 
@@ -1460,12 +2487,18 @@ var Connect4 = {
   gameStatus: gameStatus,
   findNReplaceLastNoneInAColumn: findNReplaceLastNoneInAColumn,
   isCloneList: isCloneList,
-  countChainInAColumn: countChainInAColumn,
-  countVerticalChainInAMatrix: countVerticalChainInAMatrix,
+  isChainInAColumn: isChainInAColumn,
+  countOpenChainInAColumn: countOpenChainInAColumn,
+  isVerticalChainInAMatrix: isVerticalChainInAMatrix,
+  countOpenVerticalChainInAMatrix: countOpenVerticalChainInAMatrix,
+  isHorizontalChainInAMatrix: isHorizontalChainInAMatrix,
   countHorizontalChainInAMatrix: countHorizontalChainInAMatrix,
-  countDiagonalChainInAMatrix: countDiagonalChainInAMatrix,
-  countChainInAMatrix: countChainInAMatrix,
+  isDiagonalChainInAMatrix: isDiagonalChainInAMatrix,
+  countOpenDiagonalChainInAMatrix: countOpenDiagonalChainInAMatrix,
+  isChainInAMatrix: isChainInAMatrix,
+  countOpenChainInAMatrix: countOpenChainInAMatrix,
   nextStateHelper: nextStateHelper,
+  checkChain: checkChain,
   countChain: countChain,
   nextState: nextState,
   inMatrix0: inMatrix0,

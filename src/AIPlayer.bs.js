@@ -184,39 +184,8 @@ function AIPlayer(MyGame) {
           }), nextLegalMoves);
     return pair2lists(nextLegalMoves, nextStates);
   };
-  var chainMovePathStatePair = function (previousMovePathState, newNextMovePathStatePair) {
-    if (!previousMovePathState) {
-      return Pervasives.failwith("error: chainMovePathStatePair");
-    }
-    var preTl = previousMovePathState.tl;
-    var preMovePathHd = previousMovePathState.hd[0];
-    if (!preTl) {
-      if (!newNextMovePathStatePair) {
-        return Pervasives.failwith("error: chainMovePathStatePair");
-      }
-      if (!newNextMovePathStatePair.tl) {
-        var match = newNextMovePathStatePair.hd;
-        return {
-                hd: [
-                  Pervasives.$at(preMovePathHd, match[0]),
-                  match[1]
-                ],
-                tl: /* [] */0
-              };
-      }
-      
-    }
-    if (!newNextMovePathStatePair) {
-      return Pervasives.failwith("error: chainMovePathStatePair");
-    }
-    var match$1 = newNextMovePathStatePair.hd;
-    return {
-            hd: [
-              Pervasives.$at(preMovePathHd, match$1[0]),
-              match$1[1]
-            ],
-            tl: chainMovePathStatePair(preTl, newNextMovePathStatePair.tl)
-          };
+  var pairToState = function (input) {
+    return input[1];
   };
   var bottomState = function (inState, depth) {
     if (depth === 1) {
@@ -228,12 +197,16 @@ function AIPlayer(MyGame) {
               tl: /* [] */0
             };
     }
-    if (depth === 2) {
-      return nextMovePathStatePair(inState);
-    }
     var previousMovePathState = Curry._2(bottomState, inState, depth - 1 | 0);
-    var newNextMovePathStatePair = nextMovePathStatePair(inState);
-    return chainMovePathStatePair(previousMovePathState, newNextMovePathStatePair);
+    return List.flatten(List.map((function (prePair) {
+                      var alop = nextMovePathStatePair(pairToState(prePair));
+                      return List.map((function (newPair) {
+                                    return [
+                                            Pervasives.$at(prePair[0], newPair[0]),
+                                            newPair[1]
+                                          ];
+                                  }), alop);
+                    }), previousMovePathState));
   };
   var minimax = function (s, depth) {
     if (depth === 1) {
@@ -263,6 +236,7 @@ function AIPlayer(MyGame) {
           lookUpMin: lookUpMin,
           checkWhichPlayer: checkWhichPlayer,
           nextMovePathStatePair: nextMovePathStatePair,
+          pairToState: pairToState,
           bottomState: bottomState,
           minimax: minimax,
           nextMove: nextMove,
@@ -484,39 +458,8 @@ function nextMovePathStatePair(s) {
   return pair2lists(nextLegalMoves, nextStates);
 }
 
-function chainMovePathStatePair(previousMovePathState, newNextMovePathStatePair) {
-  if (!previousMovePathState) {
-    return Pervasives.failwith("error: chainMovePathStatePair");
-  }
-  var preTl = previousMovePathState.tl;
-  var preMovePathHd = previousMovePathState.hd[0];
-  if (!preTl) {
-    if (!newNextMovePathStatePair) {
-      return Pervasives.failwith("error: chainMovePathStatePair");
-    }
-    if (!newNextMovePathStatePair.tl) {
-      var match = newNextMovePathStatePair.hd;
-      return {
-              hd: [
-                Pervasives.$at(preMovePathHd, match[0]),
-                match[1]
-              ],
-              tl: /* [] */0
-            };
-    }
-    
-  }
-  if (!newNextMovePathStatePair) {
-    return Pervasives.failwith("error: chainMovePathStatePair");
-  }
-  var match$1 = newNextMovePathStatePair.hd;
-  return {
-          hd: [
-            Pervasives.$at(preMovePathHd, match$1[0]),
-            match$1[1]
-          ],
-          tl: chainMovePathStatePair(preTl, newNextMovePathStatePair.tl)
-        };
+function pairToState(input) {
+  return input[1];
 }
 
 function bottomState(inState, depth) {
@@ -529,12 +472,16 @@ function bottomState(inState, depth) {
             tl: /* [] */0
           };
   }
-  if (depth === 2) {
-    return nextMovePathStatePair(inState);
-  }
   var previousMovePathState = Curry._2(bottomState, inState, depth - 1 | 0);
-  var newNextMovePathStatePair = nextMovePathStatePair(inState);
-  return chainMovePathStatePair(previousMovePathState, newNextMovePathStatePair);
+  return List.flatten(List.map((function (prePair) {
+                    var alop = nextMovePathStatePair(pairToState(prePair));
+                    return List.map((function (newPair) {
+                                  return [
+                                          Pervasives.$at(prePair[0], newPair[0]),
+                                          newPair[1]
+                                        ];
+                                }), alop);
+                  }), previousMovePathState));
 }
 
 function minimax(s, depth) {
@@ -569,6 +516,7 @@ var TestAIPlayer = {
   lookUpMin: lookUpMin,
   checkWhichPlayer: checkWhichPlayer,
   nextMovePathStatePair: nextMovePathStatePair,
+  pairToState: pairToState,
   bottomState: bottomState,
   minimax: minimax,
   nextMove: nextMove,
