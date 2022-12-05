@@ -447,11 +447,8 @@ module Connect4 = {
   );
   let countHorizontalChainInAMatrix: (matrix, place, int) => int =
     (inMatrix, inplace, chainNum) =>
-      countOpenVerticalChainInAMatrix(transpose(inMatrix), inplace, chainNum) /*+ countOpenVerticalChainInAMatrix(
-          horzFlip(transpose(inMatrix)),
-          inplace,
-          chainNum,
-        )*/; // since the proc only check the open to left chain, it need to check the open to right chain
+      countOpenVerticalChainInAMatrix(transpose(inMatrix), inplace, chainNum) /*+ countOpenVerticalChainInAMatrix(    horzFlip(transpose(inMatrix)),    inplace,    chainNum,  )*/; // since the proc only check the open to left chain, it need to check the open to right chain
+
   checkExpect(
     countHorizontalChainInAMatrix(
       [
@@ -801,6 +798,11 @@ module Connect4 = {
             *. float_of_int(countOpenChainInAMatrix(inMatrix, Red, 2))
             +. 0.25
             *. float_of_int(countOpenChainInAMatrix(inMatrix, Red, 1))
+            -. float_of_int(countOpenChainInAMatrix(inMatrix, Yellow, 3))
+            -. 0.5
+            *. float_of_int(countOpenChainInAMatrix(inMatrix, Yellow, 2))
+            -. 0.25
+            *. float_of_int(countOpenChainInAMatrix(inMatrix, Yellow, 1))
           | P2 =>
             (-1.0)
             *. (
@@ -809,6 +811,11 @@ module Connect4 = {
               *. float_of_int(countOpenChainInAMatrix(inMatrix, Yellow, 2))
               +. 0.25
               *. float_of_int(countOpenChainInAMatrix(inMatrix, Yellow, 1))
+              -. float_of_int(countOpenChainInAMatrix(inMatrix, Red, 3))
+              -. 0.5
+              *. float_of_int(countOpenChainInAMatrix(inMatrix, Red, 2))
+              -. 0.25
+              *. float_of_int(countOpenChainInAMatrix(inMatrix, Red, 1))
             )
           // 0.5 0.25 are different weights
           };

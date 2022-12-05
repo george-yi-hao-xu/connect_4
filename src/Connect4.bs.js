@@ -2462,9 +2462,9 @@ function estimateValue(inState) {
       return 1000.0;
     }
   } else if (inPlayer$1) {
-    return -1.0 * (countOpenChainInAMatrix(inMatrix, /* Yellow */1, 3) + 0.5 * countOpenChainInAMatrix(inMatrix, /* Yellow */1, 2) + 0.25 * countOpenChainInAMatrix(inMatrix, /* Yellow */1, 1));
+    return -1.0 * (countOpenChainInAMatrix(inMatrix, /* Yellow */1, 3) + 0.5 * countOpenChainInAMatrix(inMatrix, /* Yellow */1, 2) + 0.25 * countOpenChainInAMatrix(inMatrix, /* Yellow */1, 1) - countOpenChainInAMatrix(inMatrix, /* Red */0, 3) - 0.5 * countOpenChainInAMatrix(inMatrix, /* Red */0, 2) - 0.25 * countOpenChainInAMatrix(inMatrix, /* Red */0, 1));
   } else {
-    return countOpenChainInAMatrix(inMatrix, /* Red */0, 3) + 0.5 * countOpenChainInAMatrix(inMatrix, /* Red */0, 2) + 0.25 * countOpenChainInAMatrix(inMatrix, /* Red */0, 1);
+    return countOpenChainInAMatrix(inMatrix, /* Red */0, 3) + 0.5 * countOpenChainInAMatrix(inMatrix, /* Red */0, 2) + 0.25 * countOpenChainInAMatrix(inMatrix, /* Red */0, 1) - countOpenChainInAMatrix(inMatrix, /* Yellow */1, 3) - 0.5 * countOpenChainInAMatrix(inMatrix, /* Yellow */1, 2) - 0.25 * countOpenChainInAMatrix(inMatrix, /* Yellow */1, 1);
   }
 }
 
