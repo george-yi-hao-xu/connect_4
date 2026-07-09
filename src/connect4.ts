@@ -133,7 +133,7 @@ function getBoardWidth(dims: number[]): number {
   return dims[1];
 }
 
-function initialState(dims: string): State {
+function init(dims: string): State {
   const boardDims = parseBoardDims(dims);
   const boardHeight = getBoardHeight(boardDims);
   const boardWidth = getBoardWidth(boardDims);
@@ -145,7 +145,7 @@ function initialState(dims: string): State {
   };
 }
 
-function legalMoves(state: State): Move[] {
+function get_legal_moves(state: State): Move[] {
   const matrix = state.matrix;
   const result: Move[] = [];
   for (let col = 0; col < matrix.length; col++) {
@@ -156,7 +156,7 @@ function legalMoves(state: State): Move[] {
   return result;
 }
 
-function gameStatus(state: State): State['status'] {
+function get_game_status(state: State): State['status'] {
   return state.status;
 }
 
@@ -305,7 +305,7 @@ function countChain(matrix: Place[][], player: WhichPlayer, chainNum: number): n
  * Input: (state, move).
  * Output: state.
  */
-function nextState(state: State, move: Move): State {
+function get_next_state(state: State, move: Move): State {
   if (state.status.tag === 'Win' || state.status.tag === 'Draw') {
     return state;
   }
@@ -321,17 +321,17 @@ function nextState(state: State, move: Move): State {
   }
 }
 
-function moveOfString(input: string, state: State): Move {
+function get_move(input: string, state: State): Move {
   const col = parseInt(input, 10);
   if (isNaN(col)) throw new Error('error: illegal move');
   const move: Move = { tag: 'Move', col: col - 1 };
-  if (legalMoves(state).some(m => m.col === move.col)) {
+  if (get_legal_moves(state).some(m => m.col === move.col)) {
     return move;
   }
   throw new Error('error: illegal move');
 }
 
-function estimateValue(state: State): number {
+function get_score(state: State): number {
   if (state.status.tag !== 'Ongoing') return 0.0;
   const player = state.status.player;
   const matrix = state.matrix;
@@ -358,10 +358,10 @@ export const connect4: Game = {
   stringOfPlayer,
   stringOfState,
   stringOfMove,
-  initialState,
-  legalMoves,
-  gameStatus,
-  nextState,
-  moveOfString,
-  estimateValue,
+  init,
+  get_legal_moves,
+  get_game_status,
+  get_next_state,
+  get_move,
+  get_score,
 };

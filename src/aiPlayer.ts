@@ -48,7 +48,7 @@ export function createAIPlayer(game: Game, name: string): Player {
    * Output: whichPlayer, P1 or P2, so that I can know look for min or max
    */
   function checkWhichPlayer(state: State): WhichPlayer {
-    const status = game.gameStatus(state);
+    const status = game.get_game_status(state);
     if (status.tag === 'Draw') throw new Error('error: game over');
     return status.player;
   }
@@ -58,8 +58,8 @@ export function createAIPlayer(game: Game, name: string): Player {
    * Output: list((movePath, state)). next step's move and the corresponding state
    */
   function nextMovePathStatePair(state: State): [MovePath, State][] {
-    const nextLegalMoves = game.legalMoves(state).map(move => [move]);
-    const nextStates = nextLegalMoves.map(movePath => game.nextState(state, movePath[0]));
+    const nextLegalMoves = game.get_legal_moves(state).map(move => [move]);
+    const nextStates = nextLegalMoves.map(movePath => game.get_next_state(state, movePath[0]));
     return pair2lists(nextLegalMoves, nextStates);
   }
 
@@ -94,7 +94,7 @@ export function createAIPlayer(game: Game, name: string): Player {
     if (depth === 1) throw new Error('error: cannot look for itself');
     const bottomStates = bottomState(state, depth);
     const bottomEstVals = bottomStates.map(([movePath, s]) => {
-      return [movePath, game.estimateValue(s)] as [MovePath, number];
+      return [movePath, game.get_score(s)] as [MovePath, number];
     });
     const bestPath =
       checkWhichPlayer(state) === 'P1'

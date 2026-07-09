@@ -27,12 +27,12 @@ export interface Game {
   stringOfState(state: State): string;
   stringOfMove(move: Move): string;
 
-  initialState(dims: string): State;
-  legalMoves(state: State): Move[];
-  gameStatus(state: State): Status;
-  nextState(state: State, move: Move): State;
-  moveOfString(input: string, state: State): Move;
-  estimateValue(state: State): number;
+  init(dims: string): State;
+  get_legal_moves(state: State): Move[];
+  get_game_status(state: State): Status;
+  get_next_state(state: State, move: Move): State;
+  get_move(input: string, state: State): Move;
+  get_score(state: State): number;
 }
 
 export interface Player {

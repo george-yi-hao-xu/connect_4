@@ -20,8 +20,8 @@ switch (mode) {
   }
   case 'human-ai':
   default: {
-    const p1 = createHumanPlayer(connect4, 'Alex');
-    const p2 = createAIPlayer(connect4, 'TopG');
+    const p1 = createHumanPlayer(connect4, 'User');
+    const p2 = createAIPlayer(connect4, 'AI-2022');
     playGame(connect4, p1, p2);
     break;
   }

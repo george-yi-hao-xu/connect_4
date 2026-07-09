@@ -12,7 +12,7 @@ export function createHumanPlayer(game: Game, name: string): Player {
       throw new Error('Exiting Game REPL');
     }
     try {
-      return game.moveOfString(input, state);
+      return game.get_move(input, state);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       console.log(message);
