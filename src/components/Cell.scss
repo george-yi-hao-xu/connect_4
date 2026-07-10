@@ -1,0 +1,73 @@
+.cell {
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
+  cursor: pointer;
+  transition:
+    transform 0.1s ease,
+    filter 0.15s ease,
+    opacity 0.2s ease;
+
+  &.highlight {
+    filter: brightness(1.25);
+  }
+
+  &.winning {
+    transform: scale(1.05);
+    box-shadow: 0 0 10px white;
+    z-index: 1;
+  }
+
+  &.dimmed {
+    opacity: 0.35;
+    filter: grayscale(0.5);
+  }
+
+  &.dropping {
+    animation: dropIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    z-index: 2;
+  }
+
+  &.red {
+    background: radial-gradient(
+      circle at 30% 30%,
+      var(--color-red-start),
+      var(--color-red-end)
+    );
+    box-shadow: inset -3px -3px 8px var(--color-shadow-md);
+  }
+
+  &.yellow {
+    background: radial-gradient(
+      circle at 30% 30%,
+      var(--color-yellow-start),
+      var(--color-yellow-end)
+    );
+    box-shadow: inset -3px -3px 8px var(--color-shadow-sm);
+  }
+
+  &.none {
+    background: var(--color-bg-cell-empty);
+    box-shadow:
+      inset 2px 2px 6px var(--color-shadow-inset-dark),
+      inset -1px -1px 4px var(--color-shadow-inset-light);
+    transition: background 0.2s ease;
+  }
+}
+
+@keyframes dropIn {
+  0% {
+    transform: translateY(var(--drop-offset));
+    opacity: 0.6;
+  }
+  60% {
+    transform: translateY(0.5rem);
+    opacity: 1;
+  }
+  80% {
+    transform: translateY(-0.25rem);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}

@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { connect4, get_winning_cells } from '../algo/connect4';
-import type { State, WhichPlayer } from '../algo/types';
+import type { CellCoord, State, WhichPlayer } from '../algo/types';
+import { Arrow } from './Arrow';
+import { Cell } from './Cell';
 import './Board.scss';
 
 interface BoardProps {
@@ -9,12 +11,6 @@ interface BoardProps {
   disabled?: boolean;
 }
 
-const PLACE_CLASS: Record<string, string> = {
-  Red: 'red',
-  Yellow: 'yellow',
-  None: 'none',
-};
-
 const PLAYER_CLASS: Record<WhichPlayer, string> = {
   P1: 'red',
   P2: 'yellow',
@@ -22,10 +18,42 @@ const PLAYER_CLASS: Record<WhichPlayer, string> = {
 
 export function Board({ state, onColumnClick, disabled = false }: BoardProps) {
   const [hoveredCol, setHoveredCol] = useState<number | null>(null);
+  const [droppingCells, setDroppingCells] = useState<CellCoord[]>([]);
+  const prevMatrixRef = useRef<State['matrix'] | null>(null);
 
   useEffect(() => {
     if (disabled) setHoveredCol(null);
   }, [disabled]);
+
+  useEffect(() => {
+    if (!state) {
+      prevMatrixRef.current = null;
+      return;
+    }
+
+    const matrix = state.matrix;
+    const prev = prevMatrixRef.current;
+    prevMatrixRef.current = matrix;
+
+    if (!prev || prev.length !== matrix.length || prev[0].length !== matrix[0].length) {
+      return;
+    }
+
+    const newlyPlaced: CellCoord[] = [];
+    for (let col = 0; col < matrix.length; col++) {
+      for (let row = 0; row < matrix[col].length; row++) {
+        if (prev[col][row] === 'None' && matrix[col][row] !== 'None') {
+          newlyPlaced.push({ col, row });
+        }
+      }
+    }
+
+    if (newlyPlaced.length === 0) return;
+
+    setDroppingCells(newlyPlaced);
+    const timer = setTimeout(() => setDroppingCells([]), 500);
+    return () => clearTimeout(timer);
+  }, [state]);
 
   if (!state) {
     return <section className="board" />;
@@ -56,15 +84,11 @@ export function Board({ state, onColumnClick, disabled = false }: BoardProps) {
         onMouseLeave={() => setHoveredCol(null)}
       >
         {Array.from({ length: width }, (_, col) => (
-
-          // ARROW
-          <div
+          <Arrow
             key={`arrow-${col}`}
-            className={`arrow ${isInteractive && hoveredCol === col ? 'visible' : ''} ${currentPlayerClass}`}
-            aria-hidden="true"
-          >
-            ▼
-          </div>
+            isVisible={isInteractive && hoveredCol === col}
+            playerClass={currentPlayerClass}
+          />
         ))}
         {Array.from({ length: height }, (_, row) =>
           Array.from({ length: width }, (_, col) => {
@@ -73,13 +97,23 @@ export function Board({ state, onColumnClick, disabled = false }: BoardProps) {
               (c) => c.col === col && c.row === row,
             ) ?? false;
             const isDimmed = winningCells !== null && !isWinning;
+            const isDropping = droppingCells.some(
+              (c) => c.col === col && c.row === row,
+            );
 
-            // COIN
             return (
-              <div
+              <Cell
                 key={`${col}-${row}`}
-                className={`cell ${PLACE_CLASS[place]} ${isInteractive && hoveredCol === col ? 
-                  'highlight' : ''} ${isWinning ? 'winning' : ''} ${isDimmed ? 'dimmed' : ''}`}
+                place={place}
+                isHighlighted={isInteractive && hoveredCol === col}
+                isWinning={isWinning}
+                isDimmed={isDimmed}
+                isDropping={isDropping}
+                dropOffset={
+                  isDropping
+                    ? `calc(-${row + 1} * (4.5rem + 0.5rem) - 2rem)`
+                    : undefined
+                }
                 onClick={() => onColumnClick?.(col)}
                 onMouseEnter={() => setHoveredCol(col)}
               />
