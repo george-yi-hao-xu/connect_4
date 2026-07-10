@@ -1,0 +1,41 @@
+.board {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.grid {
+  display: grid;
+  gap: 0.5rem;
+  background: #0f172a;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.cell {
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.1s ease, filter 0.15s ease;
+}
+
+.cell:hover {
+  filter: brightness(1.15);
+}
+
+.red {
+  background: radial-gradient(circle at 30% 30%, #ff6b75, #c1121f);
+  box-shadow: inset -3px -3px 8px rgba(0, 0, 0, 0.25);
+}
+
+.yellow {
+  background: radial-gradient(circle at 30% 30%, #ffea8a, #d4a017);
+  box-shadow: inset -3px -3px 8px rgba(0, 0, 0, 0.2);
+}
+
+.none {
+  background: #1e293b;
+  box-shadow: inset 2px 2px 6px rgba(0, 0, 0, 0.5), inset -1px -1px 4px rgba(255, 255, 255, 0.05);
+}
