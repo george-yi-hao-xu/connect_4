@@ -61,17 +61,40 @@ function get_main_diag(matrix: Place[][]): Place[] {
  */
 function get_all_diag(matrix: Place[][]): Place[][] {
   if (matrix.length === 0) throw new Error("bad matrix");
-  if (matrix.length === 1) return [[matrix[0][0]]]
+  if (matrix[0].length === 0) throw new Error("bad matrix");
 
-  const main_diag_nw_2_se = get_main_diag(matrix);
-  const main_diag_ne_2_sw = get_main_diag(matrix_hori_flip(matrix))
+  // Diagonals that start on the top edge and go down-right (\).
+  const get_top_diags = (in_matrix: Place[][]): Place[][] => {
+    if (in_matrix.length === 0) return [];
+    return [
+      get_main_diag(in_matrix),
+      ...get_top_diags(in_matrix.slice(1))
+    ];
+  }
 
-  const tail = matrix.slice(1)
+  // Diagonals that start on the left edge below the top-left corner and go down-right (\).
+  // Dropping one row makes the next left-edge cell become the new top-left cell.
+  const get_left_diags = (in_matrix: Place[][]): Place[][] => {
+    if (in_matrix.length === 0 || in_matrix[0].length <= 1) return [];
+    const tail = in_matrix.map(col => col.slice(1));
+    return [
+      get_main_diag(tail),
+      ...get_left_diags(tail)
+    ];
+  }
 
+  // All down-right (\) diagonals are the top-edge starts plus the left-edge starts.
+  const get_down_right_diags = (in_matrix: Place[][]): Place[][] => {
+    return [
+      ...get_top_diags(in_matrix),
+      ...get_left_diags(in_matrix),
+    ];
+  }
+
+  // The flipped matrix reuses the same down-right logic to find the other (/) direction.
   return [
-    main_diag_nw_2_se,
-    main_diag_ne_2_sw,
-    ...get_all_diag(tail)
+    ...get_down_right_diags(matrix),
+    ...get_down_right_diags(matrix_hori_flip(matrix)),
   ];
 }
 
@@ -325,8 +348,8 @@ function get_next_state(state: State, move: Move): State {
   const next_player = otherPlayer(current_player)
   const next_matrix = put_place(state.matrix, move.col, current_player);
 
-  if (check_chain(next_matrix, next_player, 4)) {
-    return { status: { tag: 'Win', player: next_player }, matrix: next_matrix };
+  if (check_chain(next_matrix, current_player, 4)) {
+    return { status: { tag: 'Win', player: current_player }, matrix: next_matrix };
   } else if (!state.matrix.flat().includes('None')) {
     return { status: { tag: 'Draw' }, matrix: next_matrix };
   } else {

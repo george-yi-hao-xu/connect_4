@@ -3,5 +3,5 @@ export function write_ln(v: string) {
 }
 
 export function debug_log(v: string) {
-    console.log(v);
+    // console.log(v);
 }

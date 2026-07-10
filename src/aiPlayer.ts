@@ -65,50 +65,62 @@ export function create_AI_player(game: Game, name: PlayerName): Player {
     return pair_to_lists(next_legal_moves, next_states);
   }
 
-  function pairToState(pair: [MovePath, State]): State {
-    return pair[1];
-  }
+  // function pairToState(pair: [MovePath, State]): State {
+  //   return pair[1];
+  // }
 
-  /* bottomState:
-   * Input: inState, depth;
-   * Output: list((movePath, state)).
-   */
-  function bottom_state(state: State, depth: number): [MovePath, State][] {
-    if (depth === 1) {
-      return [
-        [[], state]
-      ];
-    }
+  // /* bottomState:
+  //  * Input: inState, depth;
+  //  * Output: list((movePath, state)).
+  //  */
+  // function bottom_state(state: State, depth: number): [MovePath, State][] {
+  //   if (depth === 1) {
+  //     return [
+  //       [[], state]
+  //     ];
+  //   }
 
-    const previous = bottom_state(state, depth - 1);
+  //   const previous = bottom_state(state, depth - 1);
     
-    const one_lv_deeper = previous.map(pair => {
-      const [pre_path, pre_state] = pair;
-      const next = get_all_next_move_path(pre_state);
-      return next.map(([new_move_path, new_state]) => {
-        return [[...pre_path,...new_move_path], new_state] as [MovePath, State];
-      });
-    });
+  //   const one_lv_deeper = previous.map(pair => {
+  //     const [pre_path, pre_state] = pair;
+  //     const next = get_all_next_move_path(pre_state);
+  //     return next.map(([new_move_path, new_state]) => {
+  //       return [[...pre_path,...new_move_path], new_state] as [MovePath, State];
+  //     });
+  //   });
 
-    return one_lv_deeper.flat();
-  }
+  //   return one_lv_deeper.flat();
+  // }
 
   /* minimax:
    * Input: s, depth;
    * Output: move. find the best move based on the state and the depth
    */
+  function best_path_score_recur(state: State, depth: number): number {
+    const status = game.get_game_status(state);
+
+    if (depth === 0 || status.tag !== 'Ongoing') return game.get_score(state);
+
+    const next_scores = get_all_next_move_path(state).map(([movePath, s]) => {
+      const score = best_path_score_recur(s, depth - 1);
+      return [[movePath, score], score] as [[MovePath, number], number];
+    });
+
+    const best_score_pair = status.player === 'P1' ? lookup_max(next_scores) : lookup_min(next_scores);
+
+    return best_score_pair[1];
+  }
+
   function min_i_max(state: State, depth: number): Move {
     if (depth === 1) throw new Error('error: cannot look for itself');
   
-    const bottom_states = bottom_state(state, depth);
-    const bottom_scores = bottom_states.map(([movePath, s]) => {
-      return [movePath, game.get_score(s)] as [MovePath, number];
+    const next_scores = get_all_next_move_path(state).map(([movePath, s]) => {
+      // pair each move w/ score
+      return [movePath, best_path_score_recur(s, depth - 1)] as [MovePath, number];
     });
 
-    const bestPath =
-      checkWhichPlayer(state) === 'P1'
-        ? lookup_max(bottom_scores)
-        : lookup_min(bottom_scores);
+    const bestPath = checkWhichPlayer(state) === 'P1' ? lookup_max(next_scores) : lookup_min(next_scores);
     
     return bestPath[0];
   }
