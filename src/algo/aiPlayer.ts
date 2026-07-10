@@ -2,7 +2,7 @@ import type { Game, Move, Player, PlayerName, State, WhichPlayer } from './types
 
 type MovePath = Move[];
 
-export function create_AI_player(game: Game, name: PlayerName): Player {
+export function create_AI_player(game: Game, name: PlayerName, delay = 0): Player {
   /* pair2lists
    * Input: listA with type list('a), listB with type list('b)
    * Output: a list of pairs. Each pair has the type ('a,'b)
@@ -156,7 +156,7 @@ export function create_AI_player(game: Game, name: PlayerName): Player {
 
   // ENTRY PT; minimax depth
   async function get_next_move(state: State): Promise<Move> {
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    await new Promise((resolve) => setTimeout(resolve, delay));
     return min_i_max(state, 3);
   }
 

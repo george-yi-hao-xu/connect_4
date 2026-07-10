@@ -79,8 +79,8 @@ export default function App() {
 
     switch (mode) {
       case 'ai': {
-        p1 = wrapWithRenderer(create_AI_player(connect4, 'MAX'));
-        p2 = wrapWithRenderer(create_AI_player(connect4, 'MIN'));
+        p1 = wrapWithRenderer(create_AI_player(connect4, 'MAX', 50));
+        p2 = wrapWithRenderer(create_AI_player(connect4, 'MIN', 50));
         break;
       }
       case 'human': {
@@ -91,7 +91,7 @@ export default function App() {
       case 'human-ai':
       default: {
         p1 = wrapWithRenderer(create_web_human_player(connect4, 'MAX', requestHumanMove));
-        p2 = wrapWithRenderer(create_AI_player(connect4, 'MIN'));
+        p2 = wrapWithRenderer(create_AI_player(connect4, 'MIN', 400));
         break;
       }
     }
