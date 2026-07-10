@@ -54,28 +54,23 @@ function get_main_diag(matrix: Place[][]): Place[] {
   return [matrix[0][0], ...get_main_diag(rest)];
 }
 
-/* halfNW2SEDiagonal:
- * Input: inMatrix, a matrix
- * Output: the diagonal list from NW to SE, but only the half of the matrix
- */
-function half_NW_2_SE_diagonal(matrix: Place[][]): Place[][] {
-  if (matrix.length === 0) throw new Error('error_halfNW2SEDiagonal');
-  if (matrix.length === 1) return [[matrix[0][0]]];
-
-  const tail = matrix.slice(1);
-  return [get_main_diag(matrix), ...half_NW_2_SE_diagonal(tail)];
-}
-
 /* allDiagonal:
  * Input: inMatrix, a matrix
  * Output: the diagonal list in all conditions
  */
 function get_all_diag(matrix: Place[][]): Place[][] {
+  if (matrix.length === 0) throw new Error("bad matrix");
+  if (matrix.length === 1) return [[matrix[0][0]]]
+
+  const main_diag_nw_2_se = get_main_diag(matrix);
+  const main_diag_ne_2_sw = get_main_diag(hori_flip(matrix))
+
+  const tail = matrix.slice(1)
+
   return [
-    ...half_NW_2_SE_diagonal(matrix),
-    ...half_NW_2_SE_diagonal(matrix_transpose(matrix)),
-    ...half_NW_2_SE_diagonal(hori_flip(matrix)),
-    ...half_NW_2_SE_diagonal(matrix_transpose(hori_flip(matrix))),
+    main_diag_nw_2_se,
+    main_diag_ne_2_sw,
+    ...get_all_diag(tail)
   ];
 }
 
