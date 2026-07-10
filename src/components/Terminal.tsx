@@ -1,4 +1,4 @@
-import styles from './Terminal.module.css';
+import './Terminal.scss';
 
 interface TerminalProps {
   logs: string[];
@@ -6,9 +6,9 @@ interface TerminalProps {
 
 export function Terminal({ logs }: TerminalProps) {
   return (
-    <section className={styles.terminal}>
+    <section className="terminal">
       {logs.map((line, index) => (
-        <div key={index} className={styles.logLine}>
+        <div key={index} className="logLine">
           {line}
         </div>
       ))}

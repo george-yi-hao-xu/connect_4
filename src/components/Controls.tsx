@@ -1,4 +1,4 @@
-import styles from './Controls.module.css';
+import './Controls.scss';
 
 interface ControlsProps {
   mode: string;
@@ -9,11 +9,11 @@ interface ControlsProps {
 
 export function Controls({ mode, onModeChange, onStart, running }: ControlsProps) {
   return (
-    <section className={styles.controls}>
-      <label htmlFor="mode" className={styles.label}>Mode:</label>
+    <section className="controls">
+      <label htmlFor="mode" className="label">Mode:</label>
       <select
         id="mode"
-        className={styles.select}
+        className="select"
         value={mode}
         onChange={(e) => onModeChange(e.target.value)}
         disabled={running}
@@ -23,7 +23,7 @@ export function Controls({ mode, onModeChange, onStart, running }: ControlsProps
         <option value="ai">AI vs AI</option>
       </select>
       <button
-        className={styles.button}
+        className="button"
         onClick={onStart}
         disabled={running}
       >

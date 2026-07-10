@@ -14,8 +14,8 @@
 .logLine {
   white-space: pre-wrap;
   word-break: break-word;
-}
 
-.logLine + .logLine {
-  margin-top: 0.25rem;
+  & + & {
+    margin-top: 0.25rem;
+  }
 }

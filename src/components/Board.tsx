@@ -1,6 +1,6 @@
 import { connect4 } from '../connect4';
 import type { State } from '../types';
-import styles from './Board.module.css';
+import './Board.scss';
 
 interface BoardProps {
   state: State | null;
@@ -8,14 +8,14 @@ interface BoardProps {
 }
 
 const PLACE_CLASS: Record<string, string> = {
-  Red: styles.red,
-  Yellow: styles.yellow,
-  None: styles.none,
+  Red: 'red',
+  Yellow: 'yellow',
+  None: 'none',
 };
 
 export function Board({ state, onColumnClick }: BoardProps) {
   if (!state) {
-    return <section className={styles.board} />;
+    return <section className="board" />;
   }
 
   const matrix = state.matrix;
@@ -23,9 +23,9 @@ export function Board({ state, onColumnClick }: BoardProps) {
   const height = width > 0 ? matrix[0].length : 0;
 
   return (
-    <section className={styles.board}>
+    <section className="board">
       <div
-        className={styles.grid}
+        className="grid"
         style={{ gridTemplateColumns: `repeat(${width}, 1fr)` }}
       >
         {Array.from({ length: height }, (_, row) =>
@@ -34,7 +34,7 @@ export function Board({ state, onColumnClick }: BoardProps) {
             return (
               <div
                 key={`${col}-${row}`}
-                className={`${styles.cell} ${PLACE_CLASS[place]}`}
+                className={`cell ${PLACE_CLASS[place]}`}
                 onClick={() => onColumnClick?.(col)}
               />
             );

@@ -10,4 +10,11 @@ export default defineConfig({
   build: {
     outDir: 'dist-web',
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: 'modern',
+      },
+    },
+  },
 });

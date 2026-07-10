@@ -24,15 +24,15 @@
   font-size: 0.95rem;
   cursor: pointer;
   transition: border-color 0.15s ease;
-}
 
-.select:hover:not(:disabled) {
-  border-color: #888;
-}
+  &:hover:not(:disabled) {
+    border-color: #888;
+  }
 
-.select:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 }
 
 .button {
@@ -45,17 +45,17 @@
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s ease, transform 0.05s ease;
-}
 
-.button:hover:not(:disabled) {
-  background: #143a7a;
-}
+  &:hover:not(:disabled) {
+    background: #143a7a;
+  }
 
-.button:active:not(:disabled) {
-  transform: translateY(1px);
-}
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
 
-.button:disabled {
-  background: #9ab;
-  cursor: not-allowed;
+  &:disabled {
+    background: #9ab;
+    cursor: not-allowed;
+  }
 }
