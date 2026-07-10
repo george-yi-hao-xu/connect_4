@@ -1,18 +1,25 @@
 {
   "name": "game_project",
   "version": "0.1.0",
+  "description": "Connect4 terminal game in TypeScript",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "bsb -make-world",
-    "start": "bsb -make-world -w",
-    "clean": "bsb -clean-world"
+    "build": "tsc",
+    "start": "tsc && node dist/index.js",
+    "dev": "tsc && node dist/index.js human-ai",
+    "clean": "rm -rf dist"
   },
   "keywords": [
-    "BuckleScript"
+    "typescript",
+    "connect4",
+    "minimax"
   ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "bs-platform": "^9.0.2"
+    "@types/node": "^20.19.43",
+    "@types/readline-sync": "^1.4.8",
+    "typescript": "^5.5.0"
   },
   "dependencies": {
     "readline-sync": "^1.4.10"
