@@ -129,9 +129,9 @@ export default function App() {
         onModeChange={setMode}
         onStart={startGame}
       />
-      <Status state={state} />
+      {/* <Status state={state} /> */}
       <Board state={state} onColumnClick={handleColumnClick} />
-      <Terminal logs={logs} />
+      <Terminal state={state} logs={logs} />
     </main>
   );
 }

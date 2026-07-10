@@ -18,6 +18,11 @@ export interface Move {
   col: number;
 }
 
+export interface CellCoord {
+  col: number;
+  row: number;
+}
+
 export interface State {
   status: Status;
   matrix: Place[][];

@@ -1,5 +1,5 @@
 import { debug_log } from './printer';
-import type { Game, Move, Place, State, WhichPlayer } from './types';
+import type { CellCoord, Game, Move, Place, State, WhichPlayer } from './types';
 
 /* player 1 is P1, player 2 is P2 */
 
@@ -306,6 +306,38 @@ function has_chain(matrix: Place[][], place: Place, chainNum: number): boolean {
   );
 }
 
+// only for web front end rendering winning ui
+function find_winning_cells(matrix: Place[][], target_place: Place): CellCoord[] | null {
+  const width = matrix.length;
+  if (width === 0) return null;
+  const height = matrix[0].length;
+
+  const directions = [
+    { dc: 0, dr: 1 },  // vertical
+    { dc: 1, dr: 0 },  // horizontal
+    { dc: 1, dr: 1 },  // diagonal down-right
+    { dc: 1, dr: -1 }, // diagonal up-right
+  ];
+
+  for (let col = 0; col < width; col++) {
+    for (let row = 0; row < height; row++) {
+      if (matrix[col][row] !== target_place) continue;
+      for (const { dc, dr } of directions) {
+        const cells: CellCoord[] = [];
+        for (let i = 0; i < 4; i++) {
+          const c = col + dc * i;
+          const r = row + dr * i;
+          if (c < 0 || c >= width || r < 0 || r >= height) break;
+          if (matrix[c][r] !== target_place) break;
+          cells.push({ col: c, row: r });
+        }
+        if (cells.length === 4) return cells;
+      }
+    }
+  }
+  return null;
+}
+
 function count_open_chain(matrix: Place[][], place: Place, chainNum: number): number {
   return (
     count_vert_open_chain(matrix, place, chainNum) +
@@ -355,6 +387,11 @@ function get_next_state(state: State, move: Move): State {
   } else {
     return { status: { tag: 'Ongoing', player: next_player }, matrix: next_matrix };
   }
+}
+
+export function get_winning_cells(state: State): CellCoord[] | null {
+  if (state.status.tag !== 'Win') return null;
+  return find_winning_cells(state.matrix, get_player_s_place(state.status.player));
 }
 
 function get_move(input: string, state: State): Move {
