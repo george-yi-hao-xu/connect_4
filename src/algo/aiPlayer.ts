@@ -154,7 +154,7 @@ export function create_AI_player(game: Game, name: PlayerName): Player {
   }
 
 
-  // ENTRY PT
+  // ENTRY PT; minimax depth
   async function get_next_move(state: State): Promise<Move> {
     await new Promise((resolve) => setTimeout(resolve, 200));
     return min_i_max(state, 3);
