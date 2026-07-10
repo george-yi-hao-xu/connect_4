@@ -1,13 +1,14 @@
 import * as readlineSync from 'readline-sync';
-import type { Game, Move, Player, State } from './types';
+import type { Game, Move, Player, PlayerName, State } from './types';
+import { write_ln } from './printer';
 
-export function createHumanPlayer(game: Game, name: string): Player {
-  const getInputJSLine = (): string => {
+export function create_human_player(game: Game, name: PlayerName): Player {
+  const get_input = (): string => {
     return readlineSync.question('What move do you want to make? ');
   };
 
-  const nextMove = (state: State): Move => {
-    const input = getInputJSLine();
+  const get_next_move = (state: State): Move => {
+    const input = get_input();
     if (input === 'exit') {
       throw new Error('Exiting Game REPL');
     }
@@ -15,14 +16,14 @@ export function createHumanPlayer(game: Game, name: string): Player {
       return game.get_move(input, state);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      console.log(message);
-      return nextMove(state);
+      write_ln(message);
+      return get_next_move(state);
     }
   };
 
   return {
-    playerGame: game,
-    nextMove,
-    playerName: name,
+    game_ref: game,
+    get_next_move,
+    player_name: name,
   };
 }

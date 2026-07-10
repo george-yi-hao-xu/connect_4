@@ -1,26 +1,27 @@
 import type { Game, Player, State } from './types';
+import { write_ln } from './printer';
 
 export function playGame( game: Game, player1: Player, player2: Player, dims = '5 6') {
   // check the game status (win/draw/ongoing)
   const loop_engine = (state: State): void => {
-    console.log(game.stringOfState(state));
+    write_ln(game.str_state(state));
 
     const status = game.get_game_status(state);
 
     switch (status.tag) {
       case 'Win':
-        console.log(game.stringOfPlayer(status.player) + ' wins!');
+        write_ln(game.str_player(status.player) + ' wins!');
         return;
       case 'Draw':
-        console.log('Draw...');
+        write_ln('Draw...');
         return;
       case 'Ongoing':
         // make move and pass the updated status to the loop eng
-        console.log(game.stringOfPlayer(status.player) + "'s turn.");
+        write_ln(game.str_player(status.player) + "'s turn.");
 
-        const theMove = status.player === 'P1' ? player1.nextMove(state) : player2.nextMove(state);
+        const theMove = status.player === 'P1' ? player1.get_next_move(state) : player2.get_next_move(state);
 
-        console.log( game.stringOfPlayer(status.player) + ' makes the move ' + game.stringOfMove(theMove),);
+        write_ln( game.str_player(status.player) + ' makes the move ' + game.str_move(theMove),);
 
         loop_engine(game.get_next_state(state, theMove));
         return;
@@ -31,6 +32,6 @@ export function playGame( game: Game, player1: Player, player2: Player, dims = '
     loop_engine(game.init(dims));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    console.log(message);
+    write_ln(message);
   }
 }

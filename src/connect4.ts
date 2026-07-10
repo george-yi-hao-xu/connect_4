@@ -20,11 +20,11 @@ function stringOfPlace(place: Place): string {
 }
 
 /* matrix proc */
-function horzFlip(matrix: Place[][]): Place[][] {
+function hori_flip(matrix: Place[][]): Place[][] {
   return [...matrix].reverse();
 }
 
-function transpose(matrix: Place[][]): Place[][] {
+function matrix_transpose(matrix: Place[][]): Place[][] {
   if (matrix.length === 0 || matrix[0].length === 0) {
     throw new Error('A matrix cannot be 0-dimensional');
   }
@@ -36,39 +36,50 @@ function transpose(matrix: Place[][]): Place[][] {
   return result;
 }
 
-function mainDiagonal(matrix: Place[][]): Place[] {
+/**
+ * For matrix like
+ * a b b
+ * b b b
+ * a a a
+ * it will return [a, b, a]
+ */
+function get_main_diag(matrix: Place[][]): Place[] {
   if (matrix.length === 0) throw new Error('error_mainDiagonal');
+  // only 1 row
   if (matrix[0].length === 1) return [matrix[0][0]];
+  // only 1 col
   if (matrix.length === 1) return [matrix[0][0]];
+
   const rest = matrix.slice(1).map(col => col.slice(1));
-  return [matrix[0][0], ...mainDiagonal(rest)];
+  return [matrix[0][0], ...get_main_diag(rest)];
 }
 
 /* halfNW2SEDiagonal:
  * Input: inMatrix, a matrix
  * Output: the diagonal list from NW to SE, but only the half of the matrix
  */
-function halfNW2SEDiagonal(matrix: Place[][]): Place[][] {
+function half_NW_2_SE_diagonal(matrix: Place[][]): Place[][] {
   if (matrix.length === 0) throw new Error('error_halfNW2SEDiagonal');
   if (matrix.length === 1) return [[matrix[0][0]]];
+
   const tail = matrix.slice(1);
-  return [mainDiagonal(matrix), ...halfNW2SEDiagonal(tail)];
+  return [get_main_diag(matrix), ...half_NW_2_SE_diagonal(tail)];
 }
 
 /* allDiagonal:
  * Input: inMatrix, a matrix
  * Output: the diagonal list in all conditions
  */
-function allDiagonal(matrix: Place[][]): Place[][] {
+function get_all_diag(matrix: Place[][]): Place[][] {
   return [
-    ...halfNW2SEDiagonal(matrix),
-    ...halfNW2SEDiagonal(transpose(matrix)),
-    ...halfNW2SEDiagonal(horzFlip(matrix)),
-    ...halfNW2SEDiagonal(transpose(horzFlip(matrix))),
+    ...half_NW_2_SE_diagonal(matrix),
+    ...half_NW_2_SE_diagonal(matrix_transpose(matrix)),
+    ...half_NW_2_SE_diagonal(hori_flip(matrix)),
+    ...half_NW_2_SE_diagonal(matrix_transpose(hori_flip(matrix))),
   ];
 }
 
-function stringOfPlayer(player: WhichPlayer): string {
+function str_player(player: WhichPlayer): string {
   return player === 'P1' ? 'Player1(Red)' : 'Player2(Yellow)';
 }
 
@@ -76,26 +87,26 @@ function stringOfMatrix(matrix: Place[][]): string {
   const stringOfListPlace = (row: Place[]): string => {
     return '|' + row.map(stringOfPlace).join('') + '|\n';
   };
-  return transpose(matrix).map(stringOfListPlace).join('');
+  return matrix_transpose(matrix).map(stringOfListPlace).join('');
 }
 
-function stringOfState(state: State): string {
+function str_state(state: State): string {
   switch (state.status.tag) {
     case 'Win':
-      return stringOfPlayer(state.status.player) + 'wins. \n' + stringOfMatrix(state.matrix);
+      return str_player(state.status.player) + 'wins. \n' + stringOfMatrix(state.matrix);
     case 'Draw':
       return 'Game: Draw' + stringOfMatrix(state.matrix);
     case 'Ongoing':
       return (
         "Game is ongoing. It's " +
-        stringOfPlayer(state.status.player) +
+        str_player(state.status.player) +
         "'s turn. \n" +
         stringOfMatrix(state.matrix)
       );
   }
 }
 
-function stringOfMove(move: Move): string {
+function str_move(move: Move): string {
   return 'The player move in No.' + (move.col + 1) + ' column';
 }
 
@@ -103,42 +114,42 @@ function otherPlayer(player: WhichPlayer): WhichPlayer {
   return player === 'P1' ? 'P2' : 'P1';
 }
 
-function playerToPlace(player: WhichPlayer): Place {
+function get_player_s_place(player: WhichPlayer): Place {
   return player === 'P1' ? 'Red' : 'Yellow';
 }
 
-function repeatList<T>(elem: T, num: number): T[] {
+function gen_list<T>(elem: T, num: number): T[] {
   if (num <= 0) return [];
   if (num === 1) return [elem];
-  return [elem, ...repeatList(elem, num - 1)];
+  return [elem, ...gen_list(elem, num - 1)];
 }
 
-function parseBoardDims(input: string): number[] {
+function parse_dims(input: string): number[] {
   const trimmed = input.trim();
   if (trimmed === '') return [];
   const s = trimmed + ' ';
   const firstSpace = s.indexOf(' ');
   const numStr = s.substring(0, firstSpace);
   const remainder = s.substring(firstSpace);
-  return [parseInt(numStr, 10), ...parseBoardDims(remainder)];
+  return [parseInt(numStr, 10), ...parse_dims(remainder)];
 }
 
-function getBoardHeight(dims: number[]): number {
+function get_board_height(dims: number[]): number {
   if (dims.length < 2) throw new Error('invalid dimensions');
   return dims[0];
 }
 
-function getBoardWidth(dims: number[]): number {
+function get_board_width(dims: number[]): number {
   if (dims.length < 2) throw new Error('invalid dimensions');
   return dims[1];
 }
 
 function init(dims: string): State {
-  const boardDims = parseBoardDims(dims);
-  const boardHeight = getBoardHeight(boardDims);
-  const boardWidth = getBoardWidth(boardDims);
-  const emptyColumn: Place[] = repeatList('None', boardHeight);
-  const initMatrix: Place[][] = repeatList(emptyColumn, boardWidth);
+  const boardDims = parse_dims(dims);
+  const boardHeight = get_board_height(boardDims);
+  const boardWidth = get_board_width(boardDims);
+  const emptyColumn: Place[] = gen_list('None', boardHeight);
+  const initMatrix: Place[][] = gen_list(emptyColumn, boardWidth);
   return {
     status: { tag: 'Ongoing', player: 'P1' },
     matrix: initMatrix,
@@ -164,36 +175,36 @@ function get_game_status(state: State): State['status'] {
  * Input: alop, inplayer. a column, aka a list of place, and a player
  * Output: a column, aka a list of place, but the last None was replaced
  */
-function findNReplaceLastNoneInAColumn(column: Place[], player: WhichPlayer): Place[] {
+function put_place_in_col(column: Place[], player: WhichPlayer): Place[] {
   if (column.length === 0) throw new Error('error: init matrix error. No empty matrix');
   if (column.length === 1 && column[0] === 'None') {
-    return [playerToPlace(player)];
+    return [get_player_s_place(player)];
   }
   const [hd, ...tl] = column;
   if (hd === 'None' && tl[0] !== 'None') {
-    return [playerToPlace(player), ...tl];
+    return [get_player_s_place(player), ...tl];
   } else if (hd === 'None' && tl[0] === 'None') {
-    return ['None', ...findNReplaceLastNoneInAColumn(tl, player)];
+    return ['None', ...put_place_in_col(tl, player)];
   } else {
     throw new Error('error: column is full. cannot put in');
   }
 }
 
-function getHds<T>(arr: T[], num: number): T[] {
+function get_heads<T>(arr: T[], num: number): T[] {
   if (num === 0) return [];
-  return [arr[0], ...getHds(arr.slice(1), num - 1)];
+  return [arr[0], ...get_heads(arr.slice(1), num - 1)];
 }
 
-function cullHds<T>(arr: T[], num: number): T[] {
+function cull_heads<T>(arr: T[], num: number): T[] {
   if (num === 0) return arr;
-  return cullHds(arr.slice(1), num - 1);
+  return cull_heads(arr.slice(1), num - 1);
 }
 
-/* isCloneList:
+/**
  * Input: aloa. any kind of list
  * Output: bool. if all the elements in the list are same, then true. else, false
  */
-function isCloneList<T>(arr: T[]): boolean {
+function is_list_ele_uniform<T>(arr: T[]): boolean {
   if (arr.length <= 1) return false;
   for (let i = 1; i < arr.length; i++) {
     if (arr[i] !== arr[0]) return false;
@@ -205,119 +216,120 @@ function isCloneList<T>(arr: T[]): boolean {
  * Input: (inColumn, inPlace). a list of place and the place(color)
  * Output: bool. if a chain in certain color was found in the column, then true. Else, false.
  */
-function isChainInAColumn(column: Place[], place: Place, chainNum: number): boolean {
+function has_chain_in_col(column: Place[], place: Place, chainNum: number): boolean {
   if (column.length < chainNum) return false;
   if (column[0] === place) {
     return (
-      isCloneList(getHds(column, chainNum)) ||
-      isChainInAColumn(column.slice(1), place, chainNum)
+      is_list_ele_uniform(get_heads(column, chainNum)) ||
+      has_chain_in_col(column.slice(1), place, chainNum)
     );
   }
-  return isChainInAColumn(column.slice(1), place, chainNum);
+  return has_chain_in_col(column.slice(1), place, chainNum);
 }
 
-function countOpenChainInAColumn(column: Place[], place: Place, chainNum: number): number {
+function count_open_chain_col(column: Place[], place: Place, chainNum: number): number {
   if (column.length < chainNum) return 0;
-  if (column[0] === place && isCloneList(getHds(column, chainNum))) {
-    return 1 + countOpenChainInAColumn(cullHds(column, chainNum), place, chainNum);
+  if (column[0] === place && is_list_ele_uniform(get_heads(column, chainNum))) {
+    return 1 + count_open_chain_col(cull_heads(column, chainNum), place, chainNum);
   }
-  return countOpenChainInAColumn(column.slice(1), place, chainNum);
+  return count_open_chain_col(column.slice(1), place, chainNum);
 }
 
 /* isVerticalChainInAMatrix:
  * Input: (inMatrix, inplace). a matrix and the place looking for
  * Output: bool. if a vertical chain in certain color was found in the matrix, then true. Else, false.
  */
-function isVerticalChainInAMatrix(matrix: Place[][], place: Place, chainNum: number): boolean {
-  if (matrix.length === 0) throw new Error('error: isChainInAMatrixRough');
-  return matrix.some(col => isChainInAColumn(col, place, chainNum));
+function check_vert_chain(matrix: Place[][], place: Place, chain_num: number): boolean {
+  if (matrix.length === 0) throw new Error('error: bad matrix');
+  return matrix.some(col => has_chain_in_col(col, place, chain_num));
 }
 
-function countOpenVerticalChainInAMatrix(
+function count_vert_open_chain(
   matrix: Place[][],
   place: Place,
   chainNum: number,
 ): number {
   if (matrix.length === 0) throw new Error('error: isChainInAMatrixRough');
-  return matrix.reduce((sum, col) => sum + countOpenChainInAColumn(col, place, chainNum), 0);
+  return matrix.reduce((sum, col) => sum + count_open_chain_col(col, place, chainNum), 0);
 }
 
 /* isHorizontalChainInAMatrix:
  * Input: (matrix, inPlace). a matrix and the place(color)
  * Output: bool. if a horizontal chain in certain color was found in the column, then true. Else, false.
  */
-function isHorizontalChainInAMatrix(matrix: Place[][], place: Place, chainNum: number): boolean {
-  return isVerticalChainInAMatrix(transpose(matrix), place, chainNum);
+function check_hori_chain(matrix: Place[][], place: Place, chainNum: number): boolean {
+  return check_vert_chain(matrix_transpose(matrix), place, chainNum);
 }
 
-function countHorizontalChainInAMatrix(matrix: Place[][], place: Place, chainNum: number): number {
-  return countOpenVerticalChainInAMatrix(transpose(matrix), place, chainNum);
+function count_hori_open_chain(matrix: Place[][], place: Place, chainNum: number): number {
+  return count_vert_open_chain(matrix_transpose(matrix), place, chainNum);
 }
 
-function isDiagonalChainInAMatrix(matrix: Place[][], place: Place, chainNum: number): boolean {
-  return isVerticalChainInAMatrix(allDiagonal(matrix), place, chainNum);
+function check_diag_chain(matrix: Place[][], place: Place, chainNum: number): boolean {
+  return check_vert_chain(get_all_diag(matrix), place, chainNum);
 }
 
-function countOpenDiagonalChainInAMatrix(
+function count_diag_open_chain(
   matrix: Place[][],
   place: Place,
   chainNum: number,
 ): number {
-  return countOpenVerticalChainInAMatrix(allDiagonal(matrix), place, chainNum);
+  return count_vert_open_chain(get_all_diag(matrix), place, chainNum);
 }
 
-function isChainInAMatrix(matrix: Place[][], place: Place, chainNum: number): boolean {
+function has_chain(matrix: Place[][], place: Place, chainNum: number): boolean {
   return (
-    isVerticalChainInAMatrix(matrix, place, chainNum) ||
-    isHorizontalChainInAMatrix(matrix, place, chainNum) ||
-    isDiagonalChainInAMatrix(matrix, place, chainNum)
+    check_vert_chain(matrix, place, chainNum) ||
+    check_hori_chain(matrix, place, chainNum) ||
+    check_diag_chain(matrix, place, chainNum)
   );
 }
 
-function countOpenChainInAMatrix(matrix: Place[][], place: Place, chainNum: number): number {
+function count_open_chain(matrix: Place[][], place: Place, chainNum: number): number {
   return (
-    countOpenVerticalChainInAMatrix(matrix, place, chainNum) +
-    countHorizontalChainInAMatrix(matrix, place, chainNum) +
-    countOpenDiagonalChainInAMatrix(matrix, place, chainNum)
+    count_vert_open_chain(matrix, place, chainNum) +
+    count_hori_open_chain(matrix, place, chainNum) +
+    count_diag_open_chain(matrix, place, chainNum)
   );
 }
 
-function nextStateHelper(matrix: Place[][], col: number, player: WhichPlayer): Place[][] {
+function put_place(matrix: Place[][], col_idx: number, player: WhichPlayer): Place[][] {
   if (matrix.length === 0) throw new Error('error: nextStateHelper');
-  if (col === 0) {
+
+  // put in the 1st/heading col
+  if (col_idx === 0) {
     if (matrix.length === 1 && matrix[0].length === 1 && matrix[0][0] === 'None') {
-      return [[playerToPlace(player)]];
+      return [[get_player_s_place(player)]];
     }
-    return [findNReplaceLastNoneInAColumn(matrix[0], player), ...matrix.slice(1)];
+    const rest_cols = matrix.slice(1)
+    return [put_place_in_col(matrix[0], player), ...rest_cols];
   }
-  return [matrix[0], ...nextStateHelper(matrix.slice(1), col - 1, player)];
+
+  return [matrix[0], ...put_place(matrix.slice(1), col_idx - 1, player)];
 }
 
-function checkChain(matrix: Place[][], player: WhichPlayer, chainNum: number): boolean {
-  return isChainInAMatrix(matrix, playerToPlace(player), chainNum);
+function check_chain(matrix: Place[][], player: WhichPlayer, chainNum: number): boolean {
+  return has_chain(matrix, get_player_s_place(player), chainNum);
 }
 
 function countChain(matrix: Place[][], player: WhichPlayer, chainNum: number): number {
-  return countOpenChainInAMatrix(matrix, playerToPlace(player), chainNum);
+  return count_open_chain(matrix, get_player_s_place(player), chainNum);
 }
 
-/* nextState:
- * Input: (state, move).
- * Output: state.
- */
+// determine win/lose/ongoing
 function get_next_state(state: State, move: Move): State {
   if (state.status.tag === 'Win' || state.status.tag === 'Draw') {
     return state;
   }
-  const player = state.status.player;
-  const newMatrix = nextStateHelper(state.matrix, move.col, player);
-  if (checkChain(newMatrix, player, 4)) {
-    return { status: { tag: 'Win', player }, matrix: newMatrix };
+  const current_player = state.status.player;
+  const new_matrix = put_place(state.matrix, move.col, current_player);
+
+  if (check_chain(new_matrix, current_player, 4)) {
+    return { status: { tag: 'Win', player: current_player }, matrix: new_matrix };
   } else if (!state.matrix.flat().includes('None')) {
-    // NOTE: original ReasonML checks the *old* matrix for a full board, preserved exactly.
-    return { status: { tag: 'Draw' }, matrix: newMatrix };
+    return { status: { tag: 'Draw' }, matrix: new_matrix };
   } else {
-    return { status: { tag: 'Ongoing', player: otherPlayer(player) }, matrix: newMatrix };
+    return { status: { tag: 'Ongoing', player: otherPlayer(current_player) }, matrix: new_matrix };
   }
 }
 
@@ -335,29 +347,29 @@ function get_score(state: State): number {
   if (state.status.tag !== 'Ongoing') return 0.0;
   const player = state.status.player;
   const matrix = state.matrix;
-  if (checkChain(matrix, player, 4)) {
+  if (check_chain(matrix, player, 4)) {
     return player === 'P1' ? 1000.0 : -1000.0;
   }
   if (player === 'P1') {
     return (
-      countOpenChainInAMatrix(matrix, 'Red', 3) +
-      0.5 * countOpenChainInAMatrix(matrix, 'Red', 2) +
-      0.25 * countOpenChainInAMatrix(matrix, 'Red', 1)
+      count_open_chain(matrix, 'Red', 3) +
+      0.5 * count_open_chain(matrix, 'Red', 2) +
+      0.25 * count_open_chain(matrix, 'Red', 1)
     );
   } else {
     return (
       -1.0 *
-      (countOpenChainInAMatrix(matrix, 'Yellow', 3) +
-        0.5 * countOpenChainInAMatrix(matrix, 'Yellow', 2) +
-        0.25 * countOpenChainInAMatrix(matrix, 'Yellow', 1))
+      (count_open_chain(matrix, 'Yellow', 3) +
+        0.5 * count_open_chain(matrix, 'Yellow', 2) +
+        0.25 * count_open_chain(matrix, 'Yellow', 1))
     );
   }
 }
 
 export const connect4: Game = {
-  stringOfPlayer,
-  stringOfState,
-  stringOfMove,
+  str_player,
+  str_state,
+  str_move,
   init,
   get_legal_moves,
   get_game_status,

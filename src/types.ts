@@ -4,6 +4,7 @@
  */
 
 export type WhichPlayer = 'P1' | 'P2';
+export type PlayerName = 'MAX' | 'MIN';
 
 export type Status =
   | { tag: 'Win'; player: WhichPlayer }
@@ -23,9 +24,9 @@ export interface State {
 }
 
 export interface Game {
-  stringOfPlayer(player: WhichPlayer): string;
-  stringOfState(state: State): string;
-  stringOfMove(move: Move): string;
+  str_player(player: WhichPlayer): string;
+  str_state(state: State): string;
+  str_move(move: Move): string;
 
   init(dims: string): State;
   get_legal_moves(state: State): Move[];
@@ -36,7 +37,7 @@ export interface Game {
 }
 
 export interface Player {
-  playerGame: Game;
-  nextMove(state: State): Move;
-  playerName: string;
+  game_ref: Game;
+  get_next_move(state: State): Move;
+  player_name: string;
 }
