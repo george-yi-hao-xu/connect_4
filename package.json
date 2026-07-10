@@ -6,8 +6,10 @@
   "scripts": {
     "build": "tsc",
     "start": "tsc && node dist/index.js",
-    "dev": "tsc && node dist/index.js human-ai",
-    "clean": "rm -rf dist"
+    "local:dev": "tsc && node dist/index.js human-ai",
+    "dev:web": "vite",
+    "build:web": "vite build",
+    "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\""
   },
   "keywords": [
     "typescript",
@@ -18,10 +20,17 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.19.43",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
     "@types/readline-sync": "^1.4.8",
-    "typescript": "^5.5.0"
+    "@vitejs/plugin-react": "^4.7.0",
+    "sass": "^1.101.0",
+    "typescript": "^5.5.0",
+    "vite": "^5.4.21"
   },
   "dependencies": {
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "readline-sync": "^1.4.10"
   }
 }

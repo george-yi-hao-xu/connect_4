@@ -18,6 +18,11 @@ export interface Move {
   col: number;
 }
 
+export interface CellCoord {
+  col: number;
+  row: number;
+}
+
 export interface State {
   status: Status;
   matrix: Place[][];
@@ -38,6 +43,6 @@ export interface Game {
 
 export interface Player {
   game_ref: Game;
-  get_next_move(state: State): Move;
+  get_next_move(state: State): Move | Promise<Move>;
   player_name: string;
 }

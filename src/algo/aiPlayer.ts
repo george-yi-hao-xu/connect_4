@@ -2,7 +2,7 @@ import type { Game, Move, Player, PlayerName, State, WhichPlayer } from './types
 
 type MovePath = Move[];
 
-export function create_AI_player(game: Game, name: PlayerName): Player {
+export function create_AI_player(game: Game, name: PlayerName, delay = 0): Player {
   /* pair2lists
    * Input: listA with type list('a), listB with type list('b)
    * Output: a list of pairs. Each pair has the type ('a,'b)
@@ -97,35 +97,66 @@ export function create_AI_player(game: Game, name: PlayerName): Player {
    * Input: s, depth;
    * Output: move. find the best move based on the state and the depth
    */
-  function best_path_score_recur(state: State, depth: number): number {
+  function best_path_score_recur(state: State, depth: number, alpha: number, beta: number): number {
     const status = game.get_game_status(state);
 
     if (depth === 0 || status.tag !== 'Ongoing') return game.get_score(state);
 
-    const next_scores = get_all_next_move_path(state).map(([movePath, s]) => {
-      const score = best_path_score_recur(s, depth - 1);
-      return [[movePath, score], score] as [[MovePath, number], number];
-    });
+    const next_states = get_all_next_move_path(state);
+    if (next_states.length === 0) return game.get_score(state);
 
-    const best_score_pair = status.player === 'P1' ? lookup_max(next_scores) : lookup_min(next_scores);
-
-    return best_score_pair[1];
+    if (status.player === 'P1') {
+      let best_score = -Infinity;
+      for (const [, s] of next_states) {
+        best_score = Math.max(best_score, best_path_score_recur(s, depth - 1, alpha, beta));
+        alpha = Math.max(alpha, best_score);
+        if (beta <= alpha) break;
+      }
+      return best_score;
+    }
+  
+    // If here is P2 MIN player, then the top one is a MAX
+    // alpha is the BEST value the MAX player can guarantee (like from the left branch, guarded by MIN) SO FAR
+    // If a score here found (beta) is even lower
+    // this branch will never be chosen, so prune it.
+    let best_score = Infinity;
+    for (const [, s] of next_states) {
+      best_score = Math.min(best_score, best_path_score_recur(s, depth - 1, alpha, beta));
+      beta = Math.min(beta, best_score); // lowest in curr branch
+      // prevent reaching this low branch, break!
+      if (beta <= alpha) break;
+    }
+    return best_score;
   }
 
   function min_i_max(state: State, depth: number): Move {
     if (depth === 1) throw new Error('error: cannot look for itself');
-  
-    const next_scores = get_all_next_move_path(state).map(([movePath, s]) => {
-      // pair each move w/ score
-      return [movePath, best_path_score_recur(s, depth - 1)] as [MovePath, number];
-    });
 
-    const bestPath = checkWhichPlayer(state) === 'P1' ? lookup_max(next_scores) : lookup_min(next_scores);
+    const current_player = checkWhichPlayer(state);
+    const next_scores: [MovePath, number][] = [];
+    let alpha = -Infinity;
+    let beta = Infinity;
+
+    for (const [movePath, next_s] of get_all_next_move_path(state)) {
+      const score = best_path_score_recur(next_s, depth - 1, alpha, beta);
+      next_scores.push([movePath, score]);
+
+      if (current_player === 'P1') {
+        alpha = Math.max(alpha, score);
+      } else {
+        beta = Math.min(beta, score);
+      }
+    }
+
+    const bestPath = current_player === 'P1' ? lookup_max(next_scores) : lookup_min(next_scores);
     
     return bestPath[0];
   }
 
-  function get_next_move(state: State): Move {
+
+  // ENTRY PT; minimax depth
+  async function get_next_move(state: State): Promise<Move> {
+    await new Promise((resolve) => setTimeout(resolve, delay));
     return min_i_max(state, 3);
   }
 

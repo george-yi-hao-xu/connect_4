@@ -1,0 +1,113 @@
+:root {
+  // Backgrounds
+  --color-bg-body: #f5f5f5;
+  --color-bg-surface: #ffffff;
+  --color-bg-board: #0f172a;
+  --color-bg-cell-empty: #1e293b;
+
+  // Text
+  --color-text-body: #1f2937;
+  --color-text-muted: #4b5563;
+  --color-text-status: #374151;
+  --color-text-inverse: #ffffff;
+
+  // Borders
+  --color-border-default: #d1d5db;
+  --color-border-input: #9ca3af;
+  --color-border-input-hover: #6b7280;
+
+  // Primary actions
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-disabled: #93c5fd;
+
+  // Player tokens
+  --color-red-start: #ff6b75;
+  --color-red-end: #c1121f;
+  --color-yellow-start: #ffea8a;
+  --color-yellow-end: #d4a017;
+
+  // Shadows
+  --color-shadow-sm: rgba(0, 0, 0, 0.06);
+  --color-shadow-md: rgba(0, 0, 0, 0.3);
+  --color-shadow-inset-dark: rgba(0, 0, 0, 0.55);
+  --color-shadow-inset-light: rgba(255, 255, 255, 0.08);
+}
+
+@mixin dark-tokens {
+  // Backgrounds
+  --color-bg-body: #0b1120;
+  --color-bg-surface: #1e293b;
+  --color-bg-board: rgba(255, 255, 255, 0.08);
+  --color-bg-cell-empty: #334155;
+
+  // Text
+  --color-text-body: #f1f5f9;
+  --color-text-muted: #94a3b8;
+  --color-text-status: #e2e8f0;
+  --color-text-inverse: #ffffff;
+
+  // Borders
+  --color-border-default: #334155;
+  --color-border-input: #475569;
+  --color-border-input-hover: #64748b;
+
+  // Primary actions
+  --color-primary: #3b82f6;
+  --color-primary-hover: #60a5fa;
+  --color-primary-disabled: #475569;
+
+  // Player tokens
+  --color-red-start: #ff858d;
+  --color-red-end: #e01e2c;
+  --color-yellow-start: #fff0a3;
+  --color-yellow-end: #e6b422;
+
+  // Shadows
+  --color-shadow-sm: rgba(0, 0, 0, 0.25);
+  --color-shadow-md: rgba(0, 0, 0, 0.5);
+  --color-shadow-inset-dark: rgba(0, 0, 0, 0.65);
+  --color-shadow-inset-light: rgba(255, 255, 255, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    @include dark-tokens;
+  }
+}
+
+:root.dark {
+  @include dark-tokens;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  margin: 0;
+  padding: 1rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--color-bg-body);
+  color: var(--color-text-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+main {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 1.25rem;
+  font-size: 1.75rem;
+}

@@ -1,4 +1,4 @@
-import * as readlineSync from 'readline-sync';
+import readlineSync from 'readline-sync';
 import type { Game, Move, Player, PlayerName, State } from './types';
 import { write_ln } from './printer';
 

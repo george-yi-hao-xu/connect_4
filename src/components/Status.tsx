@@ -1,0 +1,15 @@
+import { connect4 } from '../algo/connect4';
+import type { State } from '../algo/types';
+import './Status.scss';
+
+interface StatusProps {
+  state: State | null;
+}
+
+export function Status({ state }: StatusProps) {
+  const text = state
+    ? connect4.str_state(state).split('\n')[0]
+    : 'Click "Start Game" to begin.';
+
+  return <section className="status">{text}</section>;
+}
