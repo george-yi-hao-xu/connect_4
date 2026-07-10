@@ -350,7 +350,7 @@ function get_next_state(state: State, move: Move): State {
 
   if (check_chain(next_matrix, current_player, 4)) {
     return { status: { tag: 'Win', player: current_player }, matrix: next_matrix };
-  } else if (!state.matrix.flat().includes('None')) {
+  } else if (!next_matrix.flat().includes('None')) {
     return { status: { tag: 'Draw' }, matrix: next_matrix };
   } else {
     return { status: { tag: 'Ongoing', player: next_player }, matrix: next_matrix };

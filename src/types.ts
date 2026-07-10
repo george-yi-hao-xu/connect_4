@@ -38,6 +38,6 @@ export interface Game {
 
 export interface Player {
   game_ref: Game;
-  get_next_move(state: State): Move;
+  get_next_move(state: State): Move | Promise<Move>;
   player_name: string;
 }
