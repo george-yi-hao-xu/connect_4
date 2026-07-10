@@ -79,7 +79,7 @@ export default function App() {
 
     switch (mode) {
       case 'ai': {
-        p1 = wrapWithRenderer(create_AI_player(connect4, 'MAX', 50));
+        p1 = wrapWithRenderer(create_AI_player(connect4, 'MAX', 100));
         p2 = wrapWithRenderer(create_AI_player(connect4, 'MIN', 50));
         break;
       }
