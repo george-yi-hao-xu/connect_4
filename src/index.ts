@@ -1,7 +1,7 @@
-import { connect4 } from "./connect4";
-import { create_AI_player } from "./aiPlayer";
-import { create_human_player } from "./humanPlayer";
-import { playGame } from "./referee";
+import { connect4 } from "./algo/connect4";
+import { create_AI_player } from "./algo/aiPlayer";
+import { create_human_player } from "./algo/humanPlayer";
+import { playGame } from "./algo/referee";
 
 async function main() {
   const mode = process.argv[2] || "human-ai";

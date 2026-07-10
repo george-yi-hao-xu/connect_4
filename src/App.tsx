@@ -1,23 +1,27 @@
-import { useCallback, useRef, useState } from 'react';
-import { connect4 } from './connect4';
-import { create_AI_player } from './aiPlayer';
-import { create_web_human_player } from './webPlayer';
-import { playGame } from './referee';
-import type { Move, Player, State } from './types';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { connect4 } from './algo/connect4';
+import { create_AI_player } from './algo/aiPlayer';
+import { create_web_human_player } from './algo/webPlayer';
+import { playGame } from './algo/referee';
+import type { Move, Player, State } from './algo/types';
 
 import { Board } from './components/Board';
 import { Controls } from './components/Controls';
 import { Status } from './components/Status';
 import { Terminal } from './components/Terminal';
 
+const INITIAL_DIMS = '5 6';
+
 export default function App() {
-  const [state, setState] = useState<State | null>(null);
+  const [state, setState] = useState<State | null>(() => connect4.init(INITIAL_DIMS));
   const [mode, setMode] = useState('human-ai');
   const [logs, setLogs] = useState<string[]>([]);
-  const [running, setRunning] = useState(false);
 
   const moveResolverRef = useRef<((move: Move) => void) | null>(null);
+  const moveRejecterRef = useRef<((reason: Error) => void) | null>(null);
   const pendingStateRef = useRef<State | null>(null);
+  const startedRef = useRef(false);
+  const prevModeRef = useRef(mode);
 
   const log = useCallback((line: string) => {
     setLogs((prev) => [...prev, line]);
@@ -26,8 +30,9 @@ export default function App() {
   const requestHumanMove = useCallback(async (s: State): Promise<Move> => {
     setState(s);
     pendingStateRef.current = s;
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       moveResolverRef.current = resolve;
+      moveRejecterRef.current = reject;
     });
   }, []);
 
@@ -39,6 +44,7 @@ export default function App() {
 
     moveResolverRef.current({ tag: 'Move', col });
     moveResolverRef.current = null;
+    moveRejecterRef.current = null;
     pendingStateRef.current = null;
   }, []);
 
@@ -53,7 +59,13 @@ export default function App() {
   }, []);
 
   const startGame = useCallback(async () => {
-    setRunning(true);
+    if (moveRejecterRef.current) {
+      moveRejecterRef.current(new Error('Game restarted'));
+    }
+    moveResolverRef.current = null;
+    moveRejecterRef.current = null;
+    pendingStateRef.current = null;
+
     setLogs([]);
     log('Game started...');
 
@@ -80,7 +92,7 @@ export default function App() {
     }
 
     try {
-      const finalState = await playGame(connect4, p1, p2, '5 6');
+      const finalState = await playGame(connect4, p1, p2, INITIAL_DIMS);
       setState(finalState);
 
       const status = connect4.get_game_status(finalState);
@@ -91,11 +103,23 @@ export default function App() {
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      log(`Error: ${message}`);
-    } finally {
-      setRunning(false);
+      if (message !== 'Game restarted') {
+        log(`Error: ${message}`);
+      }
     }
   }, [mode, log, requestHumanMove, wrapWithRenderer]);
+
+  useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    void startGame();
+  }, [startGame]);
+
+  useEffect(() => {
+    if (prevModeRef.current === mode) return;
+    prevModeRef.current = mode;
+    void startGame();
+  }, [mode, startGame]);
 
   return (
     <main>
@@ -104,7 +128,6 @@ export default function App() {
         mode={mode}
         onModeChange={setMode}
         onStart={startGame}
-        running={running}
       />
       <Status state={state} />
       <Board state={state} onColumnClick={handleColumnClick} />

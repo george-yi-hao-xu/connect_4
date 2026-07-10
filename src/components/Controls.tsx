@@ -4,10 +4,9 @@ interface ControlsProps {
   mode: string;
   onModeChange: (mode: string) => void;
   onStart: () => void;
-  running: boolean;
 }
 
-export function Controls({ mode, onModeChange, onStart, running }: ControlsProps) {
+export function Controls({ mode, onModeChange, onStart }: ControlsProps) {
   return (
     <section className="controls">
       <label htmlFor="mode" className="label">Mode:</label>
@@ -16,7 +15,6 @@ export function Controls({ mode, onModeChange, onStart, running }: ControlsProps
         className="select"
         value={mode}
         onChange={(e) => onModeChange(e.target.value)}
-        disabled={running}
       >
         <option value="human-ai">Human vs AI</option>
         <option value="human">Human vs Human</option>
@@ -25,9 +23,8 @@ export function Controls({ mode, onModeChange, onStart, running }: ControlsProps
       <button
         className="button"
         onClick={onStart}
-        disabled={running}
       >
-        Start Game
+        Reload
       </button>
     </section>
   );

@@ -114,7 +114,7 @@ function str_state(state: State): string {
     case 'Win':
       return str_player(state.status.player) + 'wins. \n' + stringOfMatrix(state.matrix);
     case 'Draw':
-      return 'Game: Draw' + stringOfMatrix(state.matrix);
+      return 'Game: Draw\n' + stringOfMatrix(state.matrix);
     case 'Ongoing':
       return (
         "Game is ongoing. It's " +

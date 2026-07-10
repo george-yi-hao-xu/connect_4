@@ -1,5 +1,5 @@
-import { connect4 } from '../connect4';
-import type { State } from '../types';
+import { connect4 } from '../algo/connect4';
+import type { State } from '../algo/types';
 import './Status.scss';
 
 interface StatusProps {
