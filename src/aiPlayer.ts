@@ -59,10 +59,10 @@ export function create_AI_player(game: Game, name: PlayerName): Player {
    * Input: inState;
    * Output: list((movePath, state)). next step's move and the corresponding state
    */
-  function next_move_path_state_pair(state: State): [MovePath, State][] {
-    const nextLegalMoves = game.get_legal_moves(state).map(move => [move]);
-    const nextStates = nextLegalMoves.map(movePath => game.get_next_state(state, movePath[0]));
-    return pair_to_lists(nextLegalMoves, nextStates);
+  function get_all_next_move_path(state: State): [MovePath, State][] {
+    const next_legal_moves = game.get_legal_moves(state).map(move => [move]);
+    const next_states = next_legal_moves.map(movePath => game.get_next_state(state, movePath[0]));
+    return pair_to_lists(next_legal_moves, next_states);
   }
 
   function pairToState(pair: [MovePath, State]): State {
@@ -75,17 +75,22 @@ export function create_AI_player(game: Game, name: PlayerName): Player {
    */
   function bottom_state(state: State, depth: number): [MovePath, State][] {
     if (depth === 1) {
-      return [[[], state]];
+      return [
+        [[], state]
+      ];
     }
-    const previousMovePathState = bottom_state(state, depth - 1);
-    const chainedPairTree = previousMovePathState.map(prePair => {
-      const [preMovePath, preState] = prePair;
-      const nextPairs = next_move_path_state_pair(preState);
-      return nextPairs.map(([newMovePath, newState]) => {
-        return [preMovePath.concat(newMovePath), newState] as [MovePath, State];
+
+    const previous = bottom_state(state, depth - 1);
+    
+    const one_lv_deeper = previous.map(pair => {
+      const [pre_path, pre_state] = pair;
+      const next = get_all_next_move_path(pre_state);
+      return next.map(([new_move_path, new_state]) => {
+        return [[...pre_path,...new_move_path], new_state] as [MovePath, State];
       });
     });
-    return chainedPairTree.flat();
+
+    return one_lv_deeper.flat();
   }
 
   /* minimax:
@@ -95,15 +100,15 @@ export function create_AI_player(game: Game, name: PlayerName): Player {
   function min_i_max(state: State, depth: number): Move {
     if (depth === 1) throw new Error('error: cannot look for itself');
   
-    const bottomStates = bottom_state(state, depth);
-    const bottomEstVals = bottomStates.map(([movePath, s]) => {
+    const bottom_states = bottom_state(state, depth);
+    const bottom_scores = bottom_states.map(([movePath, s]) => {
       return [movePath, game.get_score(s)] as [MovePath, number];
     });
 
     const bestPath =
       checkWhichPlayer(state) === 'P1'
-        ? lookup_max(bottomEstVals)
-        : lookup_min(bottomEstVals);
+        ? lookup_max(bottom_scores)
+        : lookup_min(bottom_scores);
     
     return bestPath[0];
   }

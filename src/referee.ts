@@ -19,11 +19,11 @@ export function playGame( game: Game, player1: Player, player2: Player, dims = '
         // make move and pass the updated status to the loop eng
         write_ln(game.str_player(status.player) + "'s turn.");
 
-        const theMove = status.player === 'P1' ? player1.get_next_move(state) : player2.get_next_move(state);
+        const curr_move = status.player === 'P1' ? player1.get_next_move(state) : player2.get_next_move(state);
 
-        write_ln( game.str_player(status.player) + ' makes the move ' + game.str_move(theMove),);
+        write_ln( game.str_player(status.player) + ' makes the move ' + game.str_move(curr_move),);
 
-        loop_engine(game.get_next_state(state, theMove));
+        loop_engine(game.get_next_state(state, curr_move));
         return;
     }
   };

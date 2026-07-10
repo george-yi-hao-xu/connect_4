@@ -1,3 +1,4 @@
+import { debug_log } from './printer';
 import type { Game, Move, Place, State, WhichPlayer } from './types';
 
 /* player 1 is P1, player 2 is P2 */
@@ -20,7 +21,7 @@ function stringOfPlace(place: Place): string {
 }
 
 /* matrix proc */
-function hori_flip(matrix: Place[][]): Place[][] {
+function matrix_hori_flip(matrix: Place[][]): Place[][] {
   return [...matrix].reverse();
 }
 
@@ -63,7 +64,7 @@ function get_all_diag(matrix: Place[][]): Place[][] {
   if (matrix.length === 1) return [[matrix[0][0]]]
 
   const main_diag_nw_2_se = get_main_diag(matrix);
-  const main_diag_ne_2_sw = get_main_diag(hori_flip(matrix))
+  const main_diag_ne_2_sw = get_main_diag(matrix_hori_flip(matrix))
 
   const tail = matrix.slice(1)
 
@@ -154,11 +155,13 @@ function init(dims: string): State {
 function get_legal_moves(state: State): Move[] {
   const matrix = state.matrix;
   const result: Move[] = [];
+
   for (let col = 0; col < matrix.length; col++) {
     if (matrix[col][0] === 'None') {
       result.push({ tag: 'Move', col });
     }
   }
+
   return result;
 }
 
@@ -313,18 +316,21 @@ function countChain(matrix: Place[][], player: WhichPlayer, chainNum: number): n
 
 // determine win/lose/ongoing
 function get_next_state(state: State, move: Move): State {
+  // game already finished
   if (state.status.tag === 'Win' || state.status.tag === 'Draw') {
     return state;
   }
-  const current_player = state.status.player;
-  const new_matrix = put_place(state.matrix, move.col, current_player);
 
-  if (check_chain(new_matrix, current_player, 4)) {
-    return { status: { tag: 'Win', player: current_player }, matrix: new_matrix };
+  const current_player = state.status.player;
+  const next_player = otherPlayer(current_player)
+  const next_matrix = put_place(state.matrix, move.col, current_player);
+
+  if (check_chain(next_matrix, next_player, 4)) {
+    return { status: { tag: 'Win', player: next_player }, matrix: next_matrix };
   } else if (!state.matrix.flat().includes('None')) {
-    return { status: { tag: 'Draw' }, matrix: new_matrix };
+    return { status: { tag: 'Draw' }, matrix: next_matrix };
   } else {
-    return { status: { tag: 'Ongoing', player: otherPlayer(current_player) }, matrix: new_matrix };
+    return { status: { tag: 'Ongoing', player: next_player }, matrix: next_matrix };
   }
 }
 
@@ -338,26 +344,50 @@ function get_move(input: string, state: State): Move {
   throw new Error('error: illegal move');
 }
 
+// JUDGE the state and give back score
 function get_score(state: State): number {
-  if (state.status.tag !== 'Ongoing') return 0.0;
-  const player = state.status.player;
   const matrix = state.matrix;
-  if (check_chain(matrix, player, 4)) {
-    return player === 'P1' ? 1000.0 : -1000.0;
+
+  const is_p1_win = check_chain(matrix, 'P1', 4);
+  const is_p2_win = check_chain(matrix, 'P2', 4);
+  const is_full = !state.matrix.flat().includes("None")
+
+  if (is_p1_win && is_p2_win) {
+    debug_log("Not valid, both wins")
+    return 0;
   }
-  if (player === 'P1') {
-    return (
-      count_open_chain(matrix, 'Red', 3) +
-      0.5 * count_open_chain(matrix, 'Red', 2) +
-      0.25 * count_open_chain(matrix, 'Red', 1)
-    );
+
+  if (is_full) {
+    // draw
+    return 0;
+  }
+
+  // win/lose
+  if (is_p1_win) {
+    // max player wins
+    const score = 1000;
+    debug_log("Find win case: " + score)
+    return score;
+  }
+  else if (is_p2_win) {
+    // min player wins
+    const score = -1000;
+    debug_log("Find win case for MIN: " + score)
+    return score
   } else {
-    return (
-      -1.0 *
-      (count_open_chain(matrix, 'Yellow', 3) +
-        0.5 * count_open_chain(matrix, 'Yellow', 2) +
-        0.25 * count_open_chain(matrix, 'Yellow', 1))
-    );
+  // ongoing
+    const p1_chain_score = 
+        1.00 * count_open_chain(matrix, 'Red', 3) +
+        0.50 * count_open_chain(matrix, 'Red', 2) +
+        0.25 * count_open_chain(matrix, 'Red', 1)
+    const p2_chain_score = -1 * (
+        1.00 * count_open_chain(matrix, 'Yellow', 3) +
+        0.50 * count_open_chain(matrix, 'Yellow', 2) +
+        0.25 * count_open_chain(matrix, 'Yellow', 1)
+    )
+    const score = p1_chain_score + p2_chain_score
+    debug_log("Not finished and score is " + score)
+    return score
   }
 }
 
