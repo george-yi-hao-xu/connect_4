@@ -3,5 +3,6 @@
   margin-bottom: 1rem;
   min-height: 1.5rem;
   font-weight: 600;
-  color: #333;
+  color: var(--color-text-status);
+  transition: color 0.2s ease;
 }

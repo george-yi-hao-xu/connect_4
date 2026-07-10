@@ -5,28 +5,31 @@
   gap: 0.75rem;
   margin-bottom: 1rem;
   padding: 0.75rem 1rem;
-  background: #fff;
-  border: 1px solid #ddd;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
   border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px var(--color-shadow-sm);
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .label {
   font-weight: 600;
-  color: #444;
+  color: var(--color-text-muted);
+  transition: color 0.2s ease;
 }
 
 .select {
   padding: 0.5rem 0.75rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border-input);
   border-radius: 0.5rem;
-  background: #fff;
+  background: var(--color-bg-surface);
+  color: var(--color-text-body);
   font-size: 0.95rem;
   cursor: pointer;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, background 0.2s ease, color 0.2s ease;
 
   &:hover:not(:disabled) {
-    border-color: #888;
+    border-color: var(--color-border-input-hover);
   }
 
   &:disabled {
@@ -39,15 +42,15 @@
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 0.5rem;
-  background: #1a4a9c;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s ease, transform 0.05s ease;
 
   &:hover:not(:disabled) {
-    background: #143a7a;
+    background: var(--color-primary-hover);
   }
 
   &:active:not(:disabled) {
@@ -55,7 +58,7 @@
   }
 
   &:disabled {
-    background: #9ab;
+    background: var(--color-primary-disabled);
     cursor: not-allowed;
   }
 }
