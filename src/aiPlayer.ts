@@ -114,11 +114,16 @@ export function create_AI_player(game: Game, name: PlayerName): Player {
       }
       return best_score;
     }
-
+  
+    // If here is P2 MIN player, then the top one is a MAX
+    // alpha is the BEST value the MAX player can guarantee (like from the left branch, guarded by MIN) SO FAR
+    // If a score here found (beta) is even lower
+    // this branch will never be chosen, so prune it.
     let best_score = Infinity;
     for (const [, s] of next_states) {
       best_score = Math.min(best_score, best_path_score_recur(s, depth - 1, alpha, beta));
-      beta = Math.min(beta, best_score);
+      beta = Math.min(beta, best_score); // lowest in curr branch
+      // prevent reaching this low branch, break!
       if (beta <= alpha) break;
     }
     return best_score;
