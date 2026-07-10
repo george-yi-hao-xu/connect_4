@@ -153,7 +153,10 @@ export function create_AI_player(game: Game, name: PlayerName): Player {
     return bestPath[0];
   }
 
-  function get_next_move(state: State): Move {
+
+  // ENTRY PT
+  async function get_next_move(state: State): Promise<Move> {
+    await new Promise((resolve) => setTimeout(resolve, 200));
     return min_i_max(state, 3);
   }
 

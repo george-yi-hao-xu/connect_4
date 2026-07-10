@@ -16,6 +16,8 @@ export default function App() {
   const [state, setState] = useState<State | null>(() => connect4.init(INITIAL_DIMS));
   const [mode, setMode] = useState('human-ai');
   const [logs, setLogs] = useState<string[]>([]);
+  // freeze when ai is doing the work
+  const [free, setFree] = useState(false);
 
   const moveResolverRef = useRef<((move: Move) => void) | null>(null);
   const moveRejecterRef = useRef<((reason: Error) => void) | null>(null);
@@ -30,6 +32,7 @@ export default function App() {
   const requestHumanMove = useCallback(async (s: State): Promise<Move> => {
     setState(s);
     pendingStateRef.current = s;
+    setFree(true);
     return new Promise((resolve, reject) => {
       moveResolverRef.current = resolve;
       moveRejecterRef.current = reject;
@@ -46,6 +49,7 @@ export default function App() {
     moveResolverRef.current = null;
     moveRejecterRef.current = null;
     pendingStateRef.current = null;
+    setFree(false);
   }, []);
 
   const wrapWithRenderer = useCallback((player: Player): Player => {
@@ -65,6 +69,7 @@ export default function App() {
     moveResolverRef.current = null;
     moveRejecterRef.current = null;
     pendingStateRef.current = null;
+    setFree(false);
 
     setLogs([]);
     log('Game started...');
@@ -91,8 +96,10 @@ export default function App() {
       }
     }
 
+    // GAME LOOP ENG
     try {
       const finalState = await playGame(connect4, p1, p2, INITIAL_DIMS);
+
       setState(finalState);
 
       const status = connect4.get_game_status(finalState);
@@ -130,7 +137,7 @@ export default function App() {
         onStart={startGame}
       />
       {/* <Status state={state} /> */}
-      <Board state={state} onColumnClick={handleColumnClick} />
+      <Board state={state} onColumnClick={handleColumnClick} disabled={!free} />
       <Terminal state={state} logs={logs} />
     </main>
   );

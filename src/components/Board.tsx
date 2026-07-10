@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { connect4, get_winning_cells } from '../algo/connect4';
 import type { State, WhichPlayer } from '../algo/types';
 import './Board.scss';
@@ -6,6 +6,7 @@ import './Board.scss';
 interface BoardProps {
   state: State | null;
   onColumnClick?: (col: number) => void;
+  disabled?: boolean;
 }
 
 const PLACE_CLASS: Record<string, string> = {
@@ -19,8 +20,12 @@ const PLAYER_CLASS: Record<WhichPlayer, string> = {
   P2: 'yellow',
 };
 
-export function Board({ state, onColumnClick }: BoardProps) {
+export function Board({ state, onColumnClick, disabled = false }: BoardProps) {
   const [hoveredCol, setHoveredCol] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (disabled) setHoveredCol(null);
+  }, [disabled]);
 
   if (!state) {
     return <section className="board" />;
@@ -38,10 +43,12 @@ export function Board({ state, onColumnClick }: BoardProps) {
   const winningCells =
     state.status.tag === 'Win' ? get_winning_cells(state) : null;
 
+  const isInteractive = isOngoing && !disabled;
+
   return (
     <section className="board">
       <div
-        className="grid"
+        className={`grid ${disabled ? 'disabled' : ''}`}
         style={{
           gridTemplateColumns: `repeat(${width}, 1fr)`,
           gridTemplateRows: `auto repeat(${height}, 1fr)`,
@@ -49,9 +56,11 @@ export function Board({ state, onColumnClick }: BoardProps) {
         onMouseLeave={() => setHoveredCol(null)}
       >
         {Array.from({ length: width }, (_, col) => (
+
+          // ARROW
           <div
             key={`arrow-${col}`}
-            className={`arrow ${isOngoing && hoveredCol === col ? 'visible' : ''} ${currentPlayerClass}`}
+            className={`arrow ${isInteractive && hoveredCol === col ? 'visible' : ''} ${currentPlayerClass}`}
             aria-hidden="true"
           >
             ▼
@@ -64,10 +73,13 @@ export function Board({ state, onColumnClick }: BoardProps) {
               (c) => c.col === col && c.row === row,
             ) ?? false;
             const isDimmed = winningCells !== null && !isWinning;
+
+            // COIN
             return (
               <div
                 key={`${col}-${row}`}
-                className={`cell ${PLACE_CLASS[place]} ${isOngoing && hoveredCol === col ? 'highlight' : ''} ${isWinning ? 'winning' : ''} ${isDimmed ? 'dimmed' : ''}`}
+                className={`cell ${PLACE_CLASS[place]} ${isInteractive && hoveredCol === col ? 
+                  'highlight' : ''} ${isWinning ? 'winning' : ''} ${isDimmed ? 'dimmed' : ''}`}
                 onClick={() => onColumnClick?.(col)}
                 onMouseEnter={() => setHoveredCol(col)}
               />
