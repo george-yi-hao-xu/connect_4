@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { get_winning_cells } from '../../games/gomoku';
 import type { GomokuState, GomokuMove } from '../../games/gomoku';
-import { useGame } from '../../context/GameContext';
 import type { CellCoord } from '../../algo/types';
 import { GomokuCell } from './GomokuCell';
 import './GomokuBoard.scss';
@@ -13,7 +12,6 @@ interface GomokuBoardProps {
 }
 
 export function GomokuBoard({ state, onMove, disabled = false }: GomokuBoardProps) {
-  const game = useGame<GomokuState, GomokuMove>();
   const [hoveredCell, setHoveredCell] = useState<CellCoord | null>(null);
 
   useEffect(() => {
@@ -22,9 +20,9 @@ export function GomokuBoard({ state, onMove, disabled = false }: GomokuBoardProp
 
   const handleCellClick = (row: number, col: number) => {
     if (!state || disabled) return;
+    if (state.status.tag !== 'Ongoing') return;
 
-    const legal = game.get_legal_moves(state).some((m) => m.row === row && m.col === col);
-    if (!legal) return;
+    if (state.matrix[row][col] !== 'None') return;
 
     onMove?.({ tag: 'Move', row, col });
   };
