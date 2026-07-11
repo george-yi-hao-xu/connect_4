@@ -1,5 +1,5 @@
-import { debug_log } from './printer';
-import type { CellCoord, Game, Move, Place, State, WhichPlayer } from './types';
+import { debug_log } from '../algo/printer';
+import type { CellCoord, Game, Move, Place, State, WhichPlayer } from '../algo/types';
 
 /* player 1 is P1, player 2 is P2 */
 
@@ -462,3 +462,5 @@ export const connect4: Game = {
   get_move,
   get_score,
 };
+
+export default connect4;

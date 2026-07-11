@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { connect4, get_winning_cells } from '../algo/connect4';
+import { connect4, get_winning_cells } from '../games/connect4';
 import type { CellCoord, State, WhichPlayer } from '../algo/types';
 import { Arrow } from './Arrow';
 import { Cell } from './Cell';

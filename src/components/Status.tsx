@@ -1,4 +1,4 @@
-import { connect4 } from '../algo/connect4';
+import { connect4 } from '../games/connect4';
 import type { State } from '../algo/types';
 import './Status.scss';
 

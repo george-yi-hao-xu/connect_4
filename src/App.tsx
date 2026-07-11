@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { connect4 } from './algo/connect4';
+import { connect4 } from './games/connect4';
 import { create_AI_player } from './algo/aiPlayer';
 import { create_web_human_player } from './algo/webPlayer';
 import { playGame } from './algo/referee';
