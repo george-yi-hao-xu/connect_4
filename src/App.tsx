@@ -1,30 +1,24 @@
 import { useState } from 'react';
-import { type Connect4State, type Connect4Move } from './games/connect4';
-import { useGame } from './context/GameContext';
-import { useHumanPlayer } from './context/useHumanPlayer';
-import { useGameSession } from './context/useGameSession';
+import { GameProvider } from './context/GameContext';
+import { GAME_REGISTRY, type GameKey } from './games/registry';
+import { Sidebar } from './components/Sidebar';
 
-import { Controls } from './components/Controls';
-import { Connect4Board } from './components/connect4ui/Connect4Board';
-import { Terminal } from './components/Terminal';
+import './App.scss';
 
 export default function App() {
-  const game = useGame<Connect4State, Connect4Move>();
-  const human = useHumanPlayer<Connect4State, Connect4Move>();
-  const [mode, setMode] = useState('human-ai');
-  const { state, logs, startGame } = useGameSession(game, human, mode);
+  const [gameKey, setGameKey] = useState<GameKey>('connect4');
+
+  const entry = GAME_REGISTRY.find((g) => g.key === gameKey)!;
+  const GameApp = entry.component;
 
   return (
-    <main>
-      <h1>Connect 4</h1>
-      <Controls
-        mode={mode}
-        onModeChange={setMode}
-        onStart={startGame}
-      />
-      {/* <Status state={state} /> */}
-      <Connect4Board state={state} onMove={human.onMove} disabled={!human.isAwaitingMove} />
-      <Terminal state={state} logs={logs} />
-    </main>
+    <div className="app">
+      <Sidebar game={gameKey} onGameChange={(key) => setGameKey(key as GameKey)} />
+      <main className="app-main">
+        <GameProvider game={entry.game}>
+          <GameApp />
+        </GameProvider>
+      </main>
+    </div>
   );
 }

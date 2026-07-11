@@ -5,8 +5,6 @@ import { playGame } from '../algo/referee';
 import type { Game, Player } from '../algo/types';
 import type { HumanPlayerControls } from './useHumanPlayer';
 
-const INITIAL_DIMS = '5 6';
-
 export interface GameSession<S, M> {
   state: S | null;
   logs: string[];
@@ -17,8 +15,9 @@ export function useGameSession<S, M>(
   game: Game<S, M>,
   human: HumanPlayerControls<S, M>,
   mode: string,
+  initialDims: string,
 ): GameSession<S, M> {
-  const [state, setState] = useState<S | null>(() => game.init(INITIAL_DIMS));
+  const [state, setState] = useState<S | null>(() => game.init(initialDims));
   const [logs, setLogs] = useState<string[]>([]);
 
   const startedRef = useRef(false);
@@ -67,7 +66,7 @@ export function useGameSession<S, M>(
     }
 
     try {
-      const finalState = await playGame(game, p1, p2, INITIAL_DIMS);
+      const finalState = await playGame(game, p1, p2, initialDims);
 
       setState(finalState);
 

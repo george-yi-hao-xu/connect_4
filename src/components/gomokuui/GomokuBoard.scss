@@ -1,0 +1,84 @@
+.gomoku-board {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.gomoku-grid {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-gomoku-board, #deb887);
+  border: 2px solid var(--color-gomoku-line, #5d4037);
+  box-shadow: 0 8px 24px var(--color-shadow-md);
+  border-radius: 0.25rem;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  // ai's turn
+  &.waiting {
+    cursor: default;
+    border-color: rgba(93, 64, 55, 0.7);
+    box-shadow: 0 6px 18px var(--color-shadow-md);
+
+    .gomoku-cell {
+      cursor: default;
+    }
+  }
+}
+
+.gomoku-grid-row {
+  display: flex;
+}
+
+.gomoku-grid-cell {
+  width: 1.75rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    background: var(--color-gomoku-line, #5d4037);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  // hori line
+  &::before {
+    height: 1px;
+    left: 0;
+    right: 0;
+    top: 50%;
+  }
+
+  // vert line
+  &::after {
+    bottom: 0;
+    left: 50%;
+    top: 0;
+    width: 1px;
+  }
+
+  // top padding for board
+  &:first-child::before {
+    left: 50%;
+  }
+
+  // bottom padding for board
+  &:last-child::before {
+    right: 50%;
+  }
+}
+
+.gomoku-grid-row:first-child .gomoku-grid-cell::after {
+  top: 50%;
+}
+
+.gomoku-grid-row:last-child .gomoku-grid-cell::after {
+  bottom: 50%;
+}

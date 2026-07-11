@@ -1,14 +1,13 @@
 import { useGame } from '../context/GameContext';
-import type { Connect4State, Connect4Move } from '../games/connect4';
 import './Terminal.scss';
 
-interface TerminalProps {
-  state: Connect4State | null;
+interface TerminalProps<S> {
+  state: S | null;
   logs: string[];
 }
 
-export function Terminal({ state, logs }: TerminalProps) {
-  const game = useGame<Connect4State, Connect4Move>();
+export function Terminal<S, M>({ state, logs }: TerminalProps<S>) {
+  const game = useGame<S, M>();
 
   const statusText = state
     ? game.str_state(state).split('\n')[0]

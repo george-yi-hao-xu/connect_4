@@ -116,18 +116,9 @@ export function create_AI_player<S, M>(
 
     const current_player = checkWhichPlayer(state);
     const next_scores: [MovePath, number][] = [];
-    let alpha = -Infinity;
-    let beta = Infinity;
-
     for (const [movePath, next_s] of get_all_next_move_path(state)) {
-      const score = best_path_score_recur(next_s, depth - 1, alpha, beta);
+      const score = best_path_score_recur(next_s, depth - 1, -Infinity, Infinity);
       next_scores.push([movePath, score]);
-
-      if (current_player === 'P1') {
-        alpha = Math.max(alpha, score);
-      } else {
-        beta = Math.min(beta, score);
-      }
     }
 
     const bestPath = current_player === 'P1' ? lookup_max(next_scores) : lookup_min(next_scores);
