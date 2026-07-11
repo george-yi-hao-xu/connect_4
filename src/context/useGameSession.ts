@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { create_AI_player } from '../algo/aiPlayer';
+import { subscribe_logs } from '../algo/printer';
 import { create_web_human_player } from '../algo/webPlayer';
 import { playGame } from '../algo/referee';
 import type { Game, Player } from '../algo/types';
@@ -16,7 +17,10 @@ export function useGameSession<S, M>(
   human: HumanPlayerControls<S, M>,
   mode: string,
   initialDims: string,
+  aiDepth = 3,
 ): GameSession<S, M> {
+  const MAX_LOG_LINES = 200;
+
   const [state, setState] = useState<S | null>(() => game.init(initialDims));
   const [logs, setLogs] = useState<string[]>([]);
 
@@ -24,8 +28,19 @@ export function useGameSession<S, M>(
   const prevModeRef = useRef(mode);
 
   const log = useCallback((line: string) => {
-    setLogs((prev) => [...prev, line]);
+    setLogs((prev) => {
+      const next = [...prev, line];
+      if (next.length > MAX_LOG_LINES) {
+        next.splice(0, next.length - MAX_LOG_LINES);
+      }
+      return next;
+    });
   }, []);
+
+  useEffect(() => {
+    // cancel subscription when offload
+    return subscribe_logs(log);
+  }, [log]);
 
   const wrapWithRenderer = useCallback((player: Player<S, M>): Player<S, M> => {
     return {
@@ -48,19 +63,19 @@ export function useGameSession<S, M>(
 
     switch (mode) {
       case 'ai': {
-        p1 = wrapWithRenderer(create_AI_player(game, 'MAX', 100));
-        p2 = wrapWithRenderer(create_AI_player(game, 'MIN', 50));
+        p1 = wrapWithRenderer(create_AI_player(game, 'AI_MAX', 100, Math.random, aiDepth));
+        p2 = wrapWithRenderer(create_AI_player(game, 'AI_MIN', 50, Math.random, aiDepth));
         break;
       }
       case 'human': {
-        p1 = wrapWithRenderer(create_web_human_player(game, 'MAX', human.requestMove));
-        p2 = wrapWithRenderer(create_web_human_player(game, 'MIN', human.requestMove));
+        p1 = wrapWithRenderer(create_web_human_player(game, '001', human.requestMove));
+        p2 = wrapWithRenderer(create_web_human_player(game, '002', human.requestMove));
         break;
       }
       case 'human-ai':
       default: {
-        p1 = wrapWithRenderer(create_web_human_player(game, 'MAX', human.requestMove));
-        p2 = wrapWithRenderer(create_AI_player(game, 'MIN', 400));
+        p1 = wrapWithRenderer(create_web_human_player(game, 'User', human.requestMove));
+        p2 = wrapWithRenderer(create_AI_player(game, 'AI', 400, Math.random, aiDepth));
         break;
       }
     }
@@ -82,7 +97,7 @@ export function useGameSession<S, M>(
         log(`Error: ${message}`);
       }
     }
-  }, [game, human, log, mode, wrapWithRenderer]);
+  }, [aiDepth, game, human, log, mode, wrapWithRenderer]);
 
   useEffect(() => {
     if (startedRef.current) return;

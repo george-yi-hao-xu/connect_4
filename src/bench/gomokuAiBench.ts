@@ -11,6 +11,8 @@ import {
 
 type Coord = [row: number, col: number];
 
+const GOMOKU_AI_DEPTH = 5;
+
 interface BenchCase {
   name: string;
   player: WhichPlayer;
@@ -52,11 +54,11 @@ async function bench_case(test_case: BenchCase, runs: number): Promise<string[]>
   const state = create_state(test_case);
   const player_name = test_case.player === 'P1' ? 'MAX' : 'MIN';
 
-  await create_AI_player(gomoku, player_name, 0, create_seeded_random(17)).get_next_move(state);
+  await create_AI_player(gomoku, player_name, 0, create_seeded_random(17), GOMOKU_AI_DEPTH).get_next_move(state);
 
   const metrics: RunMetric[] = [];
   for (let i = 0; i < runs; i++) {
-    const ai = create_AI_player(gomoku, player_name, 0, create_seeded_random(17));
+    const ai = create_AI_player(gomoku, player_name, 0, create_seeded_random(17), GOMOKU_AI_DEPTH);
     const result = await checker(`${test_case.name} run ${i + 1}`, () => ai.get_next_move(state));
     metrics.push(result.metric);
   }

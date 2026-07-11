@@ -1,21 +1,22 @@
-const TERMINAL_ID = "terminal";
+type LogSubscriber = (line: string) => void;
+
+const subscribers: LogSubscriber[] = [];
+
+export function subscribe_logs(callback: LogSubscriber): () => void {
+    // push it
+    subscribers.push(callback);
+
+    // for react to offload
+    return () => {
+        const index = subscribers.indexOf(callback);
+        if (index !== -1) subscribers.splice(index, 1);
+    };
+}
 
 export function write_ln(v: string) {
-    // console.log(v);
-
-    // browser env
-    // if (typeof window !== "undefined" && typeof document !== "undefined") {
-    //     const ter = document.getElementById(TERMINAL_ID);
-    //     if (!ter) return;
-
-    //     const line = document.createElement("div");
-    //     line.className = "log-line";
-    //     line.textContent = v;
-    //     ter.appendChild(line);
-    //     ter.scrollTop = ter.scrollHeight;
-    // }
+    subscribers.forEach((cb) => cb(v));
 }
 
 export function debug_log(v: string) {
-    // console.log(v);
+    subscribers.forEach((cb) => cb(v));
 }
