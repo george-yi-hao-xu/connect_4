@@ -75,6 +75,13 @@ export function create_AI_player<S, M>(
     return pair_to_lists(next_legal_moves, next_states);
   }
 
+  function score_finished_state(state: S, depth: number): number {
+    const score = game.get_score(state);
+    if (score > 0) return score + depth;
+    if (score < 0) return score - depth;
+    return score;
+  }
+
   /* minimax:
    * Input: s, depth;
    * Output: move. find the best move based on the state and the depth
@@ -82,7 +89,9 @@ export function create_AI_player<S, M>(
   function best_path_score_recur(state: S, depth: number, alpha: number, beta: number): number {
     const status = game.get_game_status(state);
 
-    if (depth === 0 || status.tag !== 'Ongoing') return game.get_score(state);
+    // Prefer faster wins and slower losses when terminal states have the same base score.
+    if (status.tag !== 'Ongoing') return score_finished_state(state, depth);
+    if (depth === 0) return game.get_score(state);
 
     const next_states = get_all_next_move_path(state);
     if (next_states.length === 0) return game.get_score(state);
