@@ -1,9 +1,10 @@
 :root {
+  // LIGHT THEME
   // Backgrounds
   --color-bg-body: #f5f5f5;
   --color-bg-surface: #ffffff;
-  --color-bg-board: #0f172a;
-  --color-bg-cell-empty: #1e293b;
+  --color-bg-board: #f5f5f5;
+  --color-bg-cell-empty: #d1d5db;
 
   // Text
   --color-text-body: #1f2937;
@@ -35,6 +36,7 @@
 }
 
 @mixin dark-tokens {
+  // DARK THEME
   // Backgrounds
   --color-bg-body: #0b1120;
   --color-bg-surface: #1e293b;

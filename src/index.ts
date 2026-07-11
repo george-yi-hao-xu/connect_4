@@ -1,4 +1,4 @@
-import { connect4 } from "./algo/connect4";
+import { connect4 } from "./games/connect4";
 import { create_AI_player } from "./algo/aiPlayer";
 import { create_human_player } from "./algo/humanPlayer";
 import { playGame } from "./algo/referee";

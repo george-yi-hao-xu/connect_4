@@ -1,8 +1,8 @@
-import type { Place } from '../algo/types';
+import type { Connect4Place } from '../../games/connect4';
 import './Cell.scss';
 
 interface CellProps {
-  place: Place;
+  place: Connect4Place;
   isHighlighted?: boolean;
   isWinning?: boolean;
   isDimmed?: boolean;

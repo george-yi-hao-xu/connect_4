@@ -1,15 +1,17 @@
-import { connect4 } from '../algo/connect4';
-import type { State } from '../algo/types';
+import { useGame } from '../context/GameContext';
+import type { Connect4State, Connect4Move } from '../games/connect4';
 import './Terminal.scss';
 
 interface TerminalProps {
-  state: State | null;
+  state: Connect4State | null;
   logs: string[];
 }
 
 export function Terminal({ state, logs }: TerminalProps) {
+  const game = useGame<Connect4State, Connect4Move>();
+
   const statusText = state
-    ? connect4.str_state(state).split('\n')[0]
+    ? game.str_state(state).split('\n')[0]
     : 'Terminal Started...';
 
   return (

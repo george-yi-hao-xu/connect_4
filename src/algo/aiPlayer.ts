@@ -1,8 +1,12 @@
-import type { Game, Move, Player, PlayerName, State, WhichPlayer } from './types';
+import type { Game, Player, PlayerName, WhichPlayer } from './types';
 
-type MovePath = Move[];
+export function create_AI_player<S, M>(
+  game: Game<S, M>,
+  name: PlayerName,
+  delay = 0,
+): Player<S, M> {
+  type MovePath = M[];
 
-export function create_AI_player(game: Game, name: PlayerName, delay = 0): Player {
   /* pair2lists
    * Input: listA with type list('a), listB with type list('b)
    * Output: a list of pairs. Each pair has the type ('a,'b)
@@ -21,19 +25,25 @@ export function create_AI_player(game: Game, name: PlayerName, delay = 0): Playe
 
   /* lookUpMax:
    * Input: alop, a list of pairs, with type('a, float)
-   * Output: 'a, the item w/ largest float number
+   * Output: 'a, one of the items w/ largest float number, chosen uniformly at random
    */
-  function lookup_max<A>(pairs: [A, number][]): A {
+  function lookup_max<T>(pairs: [T, number][]): T {
     if (pairs.length === 0) throw new Error('Error: cannot lookUpMax in ');
-    let bestItem = pairs[0][0];
     let bestVal = pairs[0][1];
+    const bestItems: T[] = [];
+
     for (const [item, val] of pairs) {
       if (val > bestVal) {
-        bestItem = item;
         bestVal = val;
+        bestItems.length = 0; // clear
+        bestItems.push(item);
+      } else if (val === bestVal) {
+        bestItems.push(item);
       }
     }
-    return bestItem;
+
+    // if meet multi candidates, like no winning case or multi winning case, ran select one
+    return bestItems[Math.floor(Math.random() * bestItems.length)];
   }
 
   /* lookUpMin:
@@ -49,7 +59,7 @@ export function create_AI_player(game: Game, name: PlayerName, delay = 0): Playe
    * Input: inState, the state of the game
    * Output: whichPlayer, P1 or P2, so that I can know look for min or max
    */
-  function checkWhichPlayer(state: State): WhichPlayer {
+  function checkWhichPlayer(state: S): WhichPlayer {
     const status = game.get_game_status(state);
     if (status.tag === 'Draw') throw new Error('error: game over');
     return status.player;
@@ -59,45 +69,17 @@ export function create_AI_player(game: Game, name: PlayerName, delay = 0): Playe
    * Input: inState;
    * Output: list((movePath, state)). next step's move and the corresponding state
    */
-  function get_all_next_move_path(state: State): [MovePath, State][] {
+  function get_all_next_move_path(state: S): [MovePath, S][] {
     const next_legal_moves = game.get_legal_moves(state).map(move => [move]);
     const next_states = next_legal_moves.map(movePath => game.get_next_state(state, movePath[0]));
     return pair_to_lists(next_legal_moves, next_states);
   }
 
-  // function pairToState(pair: [MovePath, State]): State {
-  //   return pair[1];
-  // }
-
-  // /* bottomState:
-  //  * Input: inState, depth;
-  //  * Output: list((movePath, state)).
-  //  */
-  // function bottom_state(state: State, depth: number): [MovePath, State][] {
-  //   if (depth === 1) {
-  //     return [
-  //       [[], state]
-  //     ];
-  //   }
-
-  //   const previous = bottom_state(state, depth - 1);
-    
-  //   const one_lv_deeper = previous.map(pair => {
-  //     const [pre_path, pre_state] = pair;
-  //     const next = get_all_next_move_path(pre_state);
-  //     return next.map(([new_move_path, new_state]) => {
-  //       return [[...pre_path,...new_move_path], new_state] as [MovePath, State];
-  //     });
-  //   });
-
-  //   return one_lv_deeper.flat();
-  // }
-
   /* minimax:
    * Input: s, depth;
    * Output: move. find the best move based on the state and the depth
    */
-  function best_path_score_recur(state: State, depth: number, alpha: number, beta: number): number {
+  function best_path_score_recur(state: S, depth: number, alpha: number, beta: number): number {
     const status = game.get_game_status(state);
 
     if (depth === 0 || status.tag !== 'Ongoing') return game.get_score(state);
@@ -129,7 +111,7 @@ export function create_AI_player(game: Game, name: PlayerName, delay = 0): Playe
     return best_score;
   }
 
-  function min_i_max(state: State, depth: number): Move {
+  function min_i_max(state: S, depth: number): M {
     if (depth === 1) throw new Error('error: cannot look for itself');
 
     const current_player = checkWhichPlayer(state);
@@ -155,7 +137,7 @@ export function create_AI_player(game: Game, name: PlayerName, delay = 0): Playe
 
 
   // ENTRY PT; minimax depth
-  async function get_next_move(state: State): Promise<Move> {
+  async function get_next_move(state: S): Promise<M> {
     await new Promise((resolve) => setTimeout(resolve, delay));
     return min_i_max(state, 3);
   }
