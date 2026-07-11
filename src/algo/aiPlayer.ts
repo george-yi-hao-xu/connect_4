@@ -4,6 +4,7 @@ export function create_AI_player<S, M>(
   game: Game<S, M>,
   name: PlayerName,
   delay = 0,
+  random = Math.random,
 ): Player<S, M> {
   type MovePath = M[];
 
@@ -43,7 +44,7 @@ export function create_AI_player<S, M>(
     }
 
     // if meet multi candidates, like no winning case or multi winning case, ran select one
-    return bestItems[Math.floor(Math.random() * bestItems.length)];
+    return bestItems[Math.floor(random() * bestItems.length)];
   }
 
   /* lookUpMin:
@@ -70,9 +71,44 @@ export function create_AI_player<S, M>(
    * Output: list((movePath, state)). next step's move and the corresponding state
    */
   function get_all_next_move_path(state: S): [MovePath, S][] {
+    const status = game.get_game_status(state);
     const next_legal_moves = game.get_legal_moves(state).map(move => [move]);
     const next_states = next_legal_moves.map(movePath => game.get_next_state(state, movePath[0]));
-    return pair_to_lists(next_legal_moves, next_states);
+    const pairs = pair_to_lists(next_legal_moves, next_states);
+
+    if (status.tag !== 'Ongoing') return pairs;
+
+    // sort
+    return pairs
+      .map(([move_path, next_state]) => ({
+        move_path,
+        next_state,
+        score: game.get_score(next_state),
+      }))
+      .sort((a, b) =>
+        status.player === 'P1'
+          ? b.score - a.score
+          : a.score - b.score,
+      )
+      .map(({ move_path, next_state }) => [move_path, next_state]);
+  }
+
+  function score_finished_state(state: S, depth: number): number {
+    const score = game.get_score(state);
+    if (score > 0) return score + depth;
+    if (score < 0) return score - depth;
+    return score;
+  }
+
+  function this_player_is_going_to_win(state: S): boolean {
+    const status = game.get_game_status(state);
+    if (status.tag !== 'Ongoing') return false;
+
+    return game.get_legal_moves(state).some((move) => {
+      const next_state = game.get_next_state(state, move);
+      const next_status = game.get_game_status(next_state);
+      return next_status.tag === 'Win' && next_status.player === status.player;
+    });
   }
 
   /* minimax:
@@ -82,7 +118,9 @@ export function create_AI_player<S, M>(
   function best_path_score_recur(state: S, depth: number, alpha: number, beta: number): number {
     const status = game.get_game_status(state);
 
-    if (depth === 0 || status.tag !== 'Ongoing') return game.get_score(state);
+    // Prefer faster wins and slower losses when terminal states have the same base score.
+    if (status.tag !== 'Ongoing') return score_finished_state(state, depth);
+    if (depth === 0) return game.get_score(state);
 
     const next_states = get_all_next_move_path(state);
     if (next_states.length === 0) return game.get_score(state);
@@ -115,15 +153,42 @@ export function create_AI_player<S, M>(
     if (depth === 1) throw new Error('error: cannot look for itself');
 
     const current_player = checkWhichPlayer(state);
-    const next_scores: [MovePath, number][] = [];
-    for (const [movePath, next_s] of get_all_next_move_path(state)) {
-      const score = best_path_score_recur(next_s, depth - 1, -Infinity, Infinity);
-      next_scores.push([movePath, score]);
+    const next_move_path_state_pairs = get_all_next_move_path(state);
+
+    // Quickly iter, if find win, just RETURN
+    for (const [move_path, next_s] of next_move_path_state_pairs) {
+      const status = game.get_game_status(next_s);
+      if (status.tag === 'Win' && status.player === current_player) {
+        return move_path[0];
+      }
     }
 
-    const bestPath = current_player === 'P1' ? lookup_max(next_scores) : lookup_min(next_scores);
+    // DEFENCE
+    const safe_move_path_state_pairs = next_move_path_state_pairs.filter(
+      ([, next_s]) => !this_player_is_going_to_win(next_s),
+    );
+    if (
+      safe_move_path_state_pairs.length === 1 &&
+      safe_move_path_state_pairs.length < next_move_path_state_pairs.length
+    ) {
+      return safe_move_path_state_pairs[0][0][0];
+    }
+
+    const candidate_move_path_state_pairs =
+      safe_move_path_state_pairs.length > 0 &&
+      safe_move_path_state_pairs.length < next_move_path_state_pairs.length
+        ? safe_move_path_state_pairs
+        : next_move_path_state_pairs;
+
+    const next_scores: [MovePath, number][] = [];
+    for (const [move_path, next_s] of candidate_move_path_state_pairs) {
+      const score = best_path_score_recur(next_s, depth - 1, -Infinity, Infinity);
+      next_scores.push([move_path, score]);
+    }
+
+    const best_path = current_player === 'P1' ? lookup_max(next_scores) : lookup_min(next_scores);
     
-    return bestPath[0];
+    return best_path[0];
   }
 
 

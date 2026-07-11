@@ -7,6 +7,7 @@
     "build": "tsc",
     "start": "tsc && node dist/index.js",
     "local:dev": "tsc && node dist/index.js human-ai",
+    "bench:ai": "tsc && node dist/bench/gomokuAiBench.js",
     "dev:web": "vite",
     "build:web": "vite build",
     "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\""
