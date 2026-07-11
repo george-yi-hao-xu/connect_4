@@ -1,0 +1,46 @@
+.gomoku-board {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.gomoku-grid {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-gomoku-board, #deb887);
+  border: 2px solid var(--color-gomoku-line, #5d4037);
+  box-shadow: 0 8px 24px var(--color-shadow-md);
+  border-radius: 0.25rem;
+
+  &.disabled {
+    pointer-events: none;
+    cursor: not-allowed;
+    opacity: 0.85;
+
+    .gomoku-cell {
+      cursor: not-allowed;
+    }
+  }
+}
+
+.gomoku-grid-row {
+  display: flex;
+}
+
+.gomoku-grid-cell {
+  width: 1.75rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--color-gomoku-line, #5d4037);
+  border-bottom: 1px solid var(--color-gomoku-line, #5d4037);
+
+  &:last-child {
+    border-right: none;
+  }
+}
+
+.gomoku-grid-row:last-child .gomoku-grid-cell {
+  border-bottom: none;
+}
