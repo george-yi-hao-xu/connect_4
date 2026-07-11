@@ -1,5 +1,5 @@
-import type { Connect4State } from '../games/connect4';
-import { connect4 } from '../games/connect4';
+import { useGame } from '../context/GameContext';
+import type { Connect4State, Connect4Move } from '../games/connect4';
 import './Status.scss';
 
 interface StatusProps {
@@ -7,8 +7,10 @@ interface StatusProps {
 }
 
 export function Status({ state }: StatusProps) {
+  const game = useGame<Connect4State, Connect4Move>();
+
   const text = state
-    ? connect4.str_state(state).split('\n')[0]
+    ? game.str_state(state).split('\n')[0]
     : 'Click "Start Game" to begin.';
 
   return <section className="status">{text}</section>;

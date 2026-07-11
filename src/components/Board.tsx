@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { get_winning_cells } from '../games/connect4';
-import type { Connect4State } from '../games/connect4';
+import type { Connect4State, Connect4Move } from '../games/connect4';
+import { useGame } from '../context/GameContext';
 import type { CellCoord, WhichPlayer } from '../algo/types';
 import { Arrow } from './Arrow';
 import { Cell } from './Cell';
@@ -8,7 +9,7 @@ import './Board.scss';
 
 interface BoardProps {
   state: Connect4State | null;
-  onColumnClick?: (col: number) => void;
+  onMove?: (move: Connect4Move) => void;
   disabled?: boolean;
 }
 
@@ -17,7 +18,8 @@ const PLAYER_CLASS: Record<WhichPlayer, string> = {
   P2: 'yellow',
 };
 
-export function Board({ state, onColumnClick, disabled = false }: BoardProps) {
+export function Board({ state, onMove, disabled = false }: BoardProps) {
+  const game = useGame<Connect4State, Connect4Move>();
   const [hoveredCol, setHoveredCol] = useState<number | null>(null);
   const [droppingCells, setDroppingCells] = useState<CellCoord[]>([]);
   const prevMatrixRef = useRef<Connect4State['matrix'] | null>(null);
@@ -55,6 +57,15 @@ export function Board({ state, onColumnClick, disabled = false }: BoardProps) {
     const timer = setTimeout(() => setDroppingCells([]), 500);
     return () => clearTimeout(timer);
   }, [state]);
+
+  const handleColumnClick = (col: number) => {
+    if (!state || disabled) return;
+
+    const legal = game.get_legal_moves(state).some((m) => m.col === col);
+    if (!legal) return;
+
+    onMove?.({ tag: 'Move', col });
+  };
 
   if (!state) {
     return <section className="board" />;
@@ -115,7 +126,7 @@ export function Board({ state, onColumnClick, disabled = false }: BoardProps) {
                     ? `calc(-${row + 1} * (4.5rem + 0.5rem) - 2rem)`
                     : undefined
                 }
-                onClick={() => onColumnClick?.(col)}
+                onClick={() => handleColumnClick(col)}
                 onMouseEnter={() => setHoveredCol(col)}
               />
             );
