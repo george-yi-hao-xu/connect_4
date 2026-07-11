@@ -1,7 +1,7 @@
 const TERMINAL_ID = "terminal";
 
 export function write_ln(v: string) {
-    console.log(v);
+    // console.log(v);
 
     // browser env
     // if (typeof window !== "undefined" && typeof document !== "undefined") {
