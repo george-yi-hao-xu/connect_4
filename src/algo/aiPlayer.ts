@@ -142,8 +142,18 @@ export function create_AI_player<S, M>(
     if (depth === 1) throw new Error('error: cannot look for itself');
 
     const current_player = checkWhichPlayer(state);
+    const next_move_path_state_pairs = get_all_next_move_path(state);
+
+    // Quickly iter, if find win, just RETURN
+    for (const [movePath, next_s] of next_move_path_state_pairs) {
+      const status = game.get_game_status(next_s);
+      if (status.tag === 'Win' && status.player === current_player) {
+        return movePath[0];
+      }
+    }
+
     const next_scores: [MovePath, number][] = [];
-    for (const [movePath, next_s] of get_all_next_move_path(state)) {
+    for (const [movePath, next_s] of next_move_path_state_pairs) {
       const score = best_path_score_recur(next_s, depth - 1, -Infinity, Infinity);
       next_scores.push([movePath, score]);
     }
