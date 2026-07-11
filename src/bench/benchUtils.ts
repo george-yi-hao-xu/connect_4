@@ -11,10 +11,10 @@ export interface Summary {
 }
 
 export interface RunMetric {
-  wallMs: number;
-  cpuMs: number;
-  heapUsedMb: number;
-  rssMb: number;
+  wall_ms: number;
+  cpu_ms: number;
+  heap_used_mb: number;
+  rss_mb: number;
 }
 
 export interface CheckerLog {
@@ -40,31 +40,31 @@ export function format_summary(label: string, unit: string, summary: Summary): s
 }
 
 export async function checker(label: string, gameFn: () => Promise<unknown> | unknown): Promise<CheckerLog> {
-  const cpuStart = process.cpuUsage();
+  const cpu_start = process.cpuUsage();
   const start = performance.now();
 
   await gameFn();
 
-  const wallMs = performance.now() - start;
-  const cpu = process.cpuUsage(cpuStart);
+  const wall_ms = performance.now() - start;
+  const cpu = process.cpuUsage(cpu_start);
   const memory = process.memoryUsage();
   const metric = {
-    wallMs,
-    cpuMs: (cpu.user + cpu.system) / 1000,
-    heapUsedMb: memory.heapUsed / 1024 / 1024,
-    rssMb: memory.rss / 1024 / 1024,
+    wall_ms,
+    cpu_ms: (cpu.user + cpu.system) / 1000,
+    heap_used_mb: memory.heapUsed / 1024 / 1024,
+    rss_mb: memory.rss / 1024 / 1024,
   };
 
   return {
     metric,
-    log: `${label}: wall=${metric.wallMs.toFixed(1)}ms cpu=${metric.cpuMs.toFixed(1)}ms heapUsed=${metric.heapUsedMb.toFixed(1)}MB rss=${metric.rssMb.toFixed(1)}MB`,
+    log: `${label}: wall=${metric.wall_ms.toFixed(1)}ms cpu=${metric.cpu_ms.toFixed(1)}ms heap_used=${metric.heap_used_mb.toFixed(1)}MB rss=${metric.rss_mb.toFixed(1)}MB`,
   };
 }
 
 export function write_bench_log(prefix: string, lines: string[]): string {
   mkdirSync('bench-logs', { recursive: true });
-  const logPath = join('bench-logs', `${prefix}-${new Date().toISOString().replace(/[:.]/g, '-')}.log`);
+  const log_path = join('bench-logs', `${prefix}-${new Date().toISOString().replace(/[:.]/g, '-')}.log`);
 
-  writeFileSync(logPath, [...lines, `log=${logPath}`].join('\n') + '\n', 'utf8');
-  return logPath;
+  writeFileSync(log_path, [...lines, `log=${log_path}`].join('\n') + '\n', 'utf8');
+  return log_path;
 }

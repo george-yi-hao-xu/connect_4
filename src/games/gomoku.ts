@@ -264,25 +264,85 @@ function get_move(input: string, state: GomokuState): GomokuMove {
   throw new Error('error: illegal move');
 }
 
-function count_chains_with_open_ends(
-  board: GomokuPlace[][],
-  place: GomokuPlace,
-  length: number,
-  minOpenEnds: number,
-): number {
+interface ChainStats {
+  black_win: boolean;
+  white_win: boolean;
+  black_len4_open1: number;
+  black_len3_open2: number;
+  black_len3_open1: number;
+  black_len2_open2: number;
+  black_len2_open1: number;
+  white_len4_open1: number;
+  white_len3_open2: number;
+  white_len3_open1: number;
+  white_len2_open2: number;
+  white_len2_open1: number;
+}
+
+function create_chain_stats(): ChainStats {
+  return {
+    black_win: false,
+    white_win: false,
+    black_len4_open1: 0,
+    black_len3_open2: 0,
+    black_len3_open1: 0,
+    black_len2_open2: 0,
+    black_len2_open1: 0,
+    white_len4_open1: 0,
+    white_len3_open2: 0,
+    white_len3_open1: 0,
+    white_len2_open2: 0,
+    white_len2_open1: 0,
+  };
+}
+
+function add_chain_stat(stats: ChainStats, place: GomokuPlace, len: number, open_ends: number): void {
+  if (place === 'Black') {
+    if (len >= 5) {
+      stats.black_win = true;
+    } else if (len === 4 && open_ends >= 1) {
+      stats.black_len4_open1++;
+    } else if (len === 3) {
+      if (open_ends >= 2) stats.black_len3_open2++;
+      if (open_ends >= 1) stats.black_len3_open1++;
+    } else if (len === 2) {
+      if (open_ends >= 2) stats.black_len2_open2++;
+      if (open_ends >= 1) stats.black_len2_open1++;
+    }
+    return;
+  }
+
+  if (place === 'White') {
+    if (len >= 5) {
+      stats.white_win = true;
+    } else if (len === 4 && open_ends >= 1) {
+      stats.white_len4_open1++;
+    } else if (len === 3) {
+      if (open_ends >= 2) stats.white_len3_open2++;
+      if (open_ends >= 1) stats.white_len3_open1++;
+    } else if (len === 2) {
+      if (open_ends >= 2) stats.white_len2_open2++;
+      if (open_ends >= 1) stats.white_len2_open1++;
+    }
+  }
+}
+
+function collect_chain_stats(board: GomokuPlace[][]): ChainStats {
   const height = board.length;
   const width = height > 0 ? board[0].length : 0;
-  let count = 0;
+  const stats = create_chain_stats();
 
   for (let row = 0; row < height; row++) {
     for (let col = 0; col < width; col++) {
-      if (board[row][col] !== place) continue;
+      const place = board[row][col];
+      if (place === 'None') continue;
+
       for (const { dc, dr } of DIRECTIONS) {
-        const prevRow = row - dr;
-        const prevCol = col - dc;
+        const _prev_row = row - dr;
+        const _prev_col = col - dc;
         if (
-          in_bounds(prevRow, prevCol, height, width) &&
-          board[prevRow][prevCol] === place
+          in_bounds(_prev_row, _prev_col, height, width) &&
+          board[_prev_row][_prev_col] === place
         ) {
           continue;
         }
@@ -295,29 +355,23 @@ function count_chains_with_open_ends(
           r += dr;
           c += dc;
         }
-        if (len !== length) continue;
+        const prev_open = !in_bounds(_prev_row, _prev_col, height, width) || board[_prev_row][_prev_col] === 'None';
+        const next_open = !in_bounds(r, c, height, width) || board[r][c] === 'None';
+        const open_ends = (prev_open ? 1 : 0) + (next_open ? 1 : 0);
 
-        const prevOpen =
-          !in_bounds(prevRow, prevCol, height, width) ||
-          board[prevRow][prevCol] === 'None';
-        const nextOpen = !in_bounds(r, c, height, width) || board[r][c] === 'None';
-        const openEnds = (prevOpen ? 1 : 0) + (nextOpen ? 1 : 0);
-
-        if (openEnds >= minOpenEnds) count++;
+        add_chain_stat(stats, place, len, open_ends);
       }
     }
   }
 
-  return count;
+  return stats;
 }
 
 function get_score(state: GomokuState): number {
   const board = state.matrix;
+  const chain_stats = collect_chain_stats(board);
 
-  const is_p1_win = has_five_in_a_row(board, 'Black');
-  const is_p2_win = has_five_in_a_row(board, 'White');
-
-  if (is_p1_win && is_p2_win) {
+  if (chain_stats.black_win && chain_stats.white_win) {
     debug_log('Not valid, both wins');
     return 0;
   }
@@ -326,31 +380,31 @@ function get_score(state: GomokuState): number {
     return 0;
   }
 
-  if (is_p1_win) {
+  if (chain_stats.black_win) {
     const score = 1000;
     debug_log('Find win case: ' + score);
     return score;
   }
 
-  if (is_p2_win) {
+  if (chain_stats.white_win) {
     const score = -1000;
     debug_log('Find win case for MIN: ' + score);
     return score;
   }
 
   const p1_score =
-    1 * count_chains_with_open_ends(board, 'Black', 4, 1) +
-    0.75 * count_chains_with_open_ends(board, 'Black', 3, 2) +
-    0.5 * count_chains_with_open_ends(board, 'Black', 3, 1) +
-    0.1 * count_chains_with_open_ends(board, 'Black', 2, 2) +
-    0.05 * count_chains_with_open_ends(board, 'Black', 2, 1);
+    1 * chain_stats.black_len4_open1 +
+    0.75 * chain_stats.black_len3_open2 +
+    0.5 * chain_stats.black_len3_open1 +
+    0.1 * chain_stats.black_len2_open2 +
+    0.05 * chain_stats.black_len2_open1;
 
   const p2_score =
-    1 * count_chains_with_open_ends(board, 'White', 4, 1) +
-    0.75 * count_chains_with_open_ends(board, 'White', 3, 2) +
-    0.5 * count_chains_with_open_ends(board, 'White', 3, 1) +
-    0.1 * count_chains_with_open_ends(board, 'White', 2, 2) +
-    0.05 * count_chains_with_open_ends(board, 'White', 2, 1);
+    1 * chain_stats.white_len4_open1 +
+    0.75 * chain_stats.white_len3_open2 +
+    0.5 * chain_stats.white_len3_open1 +
+    0.1 * chain_stats.white_len2_open2 +
+    0.05 * chain_stats.white_len2_open1;
 
   const score = p1_score - p2_score;
   debug_log('Not finished and score is ' + score);

@@ -48,29 +48,29 @@ function create_state({ player, whites, blacks }: BenchCase): GomokuState {
   };
 }
 
-async function bench_case(testCase: BenchCase, runs: number): Promise<string[]> {
-  const state = create_state(testCase);
-  const playerName = testCase.player === 'P1' ? 'MAX' : 'MIN';
+async function bench_case(test_case: BenchCase, runs: number): Promise<string[]> {
+  const state = create_state(test_case);
+  const player_name = test_case.player === 'P1' ? 'MAX' : 'MIN';
 
-  await create_AI_player(gomoku, playerName, 0, create_seeded_random(17)).get_next_move(state);
+  await create_AI_player(gomoku, player_name, 0, create_seeded_random(17)).get_next_move(state);
 
   const metrics: RunMetric[] = [];
   for (let i = 0; i < runs; i++) {
-    const ai = create_AI_player(gomoku, playerName, 0, create_seeded_random(17));
-    const result = await checker(`${testCase.name} run ${i + 1}`, () => ai.get_next_move(state));
+    const ai = create_AI_player(gomoku, player_name, 0, create_seeded_random(17));
+    const result = await checker(`${test_case.name} run ${i + 1}`, () => ai.get_next_move(state));
     metrics.push(result.metric);
   }
 
-  const wall = summarize(metrics.map((metric) => metric.wallMs));
-  const cpu = summarize(metrics.map((metric) => metric.cpuMs));
-  const heap = summarize(metrics.map((metric) => metric.heapUsedMb));
-  const rss = summarize(metrics.map((metric) => metric.rssMb));
+  const wall = summarize(metrics.map((metric) => metric.wall_ms));
+  const cpu = summarize(metrics.map((metric) => metric.cpu_ms));
+  const heap = summarize(metrics.map((metric) => metric.heap_used_mb));
+  const rss = summarize(metrics.map((metric) => metric.rss_mb));
 
   return [
-    testCase.name,
+    test_case.name,
     `  ${format_summary('wall', 'ms', wall)}`,
     `  ${format_summary('cpu', 'ms', cpu)}`,
-    `  ${format_summary('heapUsed', 'MB', heap)}`,
+    `  ${format_summary('heap_used', 'MB', heap)}`,
     `  ${format_summary('rss', 'MB', rss)}`,
   ];
 }
@@ -110,12 +110,12 @@ async function main(): Promise<void> {
     '',
   ];
 
-  for (const testCase of cases) {
-    lines.push(...await bench_case(testCase, runs), '');
+  for (const test_case of cases) {
+    lines.push(...await bench_case(test_case, runs), '');
   }
 
-  const logPath = write_bench_log('gomoku-ai', lines);
-  lines.push(`log=${logPath}`);
+  const log_path = write_bench_log('gomoku-ai', lines);
+  lines.push(`log=${log_path}`);
 
   const output = lines.join('\n');
   console.log(output);
