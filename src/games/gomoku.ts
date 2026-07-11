@@ -407,7 +407,7 @@ function get_score(state: GomokuState): number {
     0.05 * chain_stats.white_len2_open1;
 
   const score = p1_score - p2_score;
-  debug_log('Not finished and score is ' + score);
+  // debug_log('Not finished and score is ' + score);
   return score;
 }
 

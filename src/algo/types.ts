@@ -4,7 +4,7 @@
  */
 
 export type WhichPlayer = 'P1' | 'P2';
-export type PlayerName = 'MAX' | 'MIN';
+export type PlayerName = string;
 
 export type Status =
   | { tag: 'Win'; player: WhichPlayer }

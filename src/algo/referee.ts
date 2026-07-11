@@ -14,19 +14,22 @@ export async function playGame<S, M>(
     const status = game.get_game_status(state);
 
     switch (status.tag) {
-      case 'Win':
-        write_ln(game.str_player(status.player) + ' wins!');
+      case 'Win': {
+        const winner = status.player === 'P1' ? player1 : player2;
+        write_ln(`${game.str_player(status.player)} (${winner.player_name}) wins!`);
         return state;
+      }
       case 'Draw':
         write_ln('Draw...');
         return state;
       case 'Ongoing':
         // make move and pass the updated status to the loop eng
-        write_ln(game.str_player(status.player) + "'s turn.");
+        const currentPlayer = status.player === 'P1' ? player1 : player2;
+        write_ln(`${game.str_player(status.player)} (${currentPlayer.player_name})'s turn.`);
 
-        const curr_move = await (status.player === 'P1' ? player1.get_next_move(state) : player2.get_next_move(state));
+        const curr_move = await currentPlayer.get_next_move(state);
 
-        write_ln(game.str_player(status.player) + ' makes the move ' + game.str_move(curr_move));
+        write_ln(`${game.str_player(status.player)} (${currentPlayer.player_name}) makes the move ${game.str_move(curr_move)}`);
 
         return await loop_engine(game.get_next_state(state, curr_move));
     }
