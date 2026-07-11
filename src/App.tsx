@@ -1,27 +1,26 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { connect4 } from './games/connect4';
+import { connect4, type Connect4State, type Connect4Move } from './games/connect4';
 import { create_AI_player } from './algo/aiPlayer';
 import { create_web_human_player } from './algo/webPlayer';
 import { playGame } from './algo/referee';
-import type { Move, Player, State } from './algo/types';
+import type { Player } from './algo/types';
 
 import { Board } from './components/Board';
 import { Controls } from './components/Controls';
-import { Status } from './components/Status';
 import { Terminal } from './components/Terminal';
 
 const INITIAL_DIMS = '5 6';
 
 export default function App() {
-  const [state, setState] = useState<State | null>(() => connect4.init(INITIAL_DIMS));
+  const [state, setState] = useState<Connect4State | null>(() => connect4.init(INITIAL_DIMS));
   const [mode, setMode] = useState('human-ai');
   const [logs, setLogs] = useState<string[]>([]);
   // freeze when ai is doing the work
   const [free, setFree] = useState(false);
 
-  const moveResolverRef = useRef<((move: Move) => void) | null>(null);
+  const moveResolverRef = useRef<((move: Connect4Move) => void) | null>(null);
   const moveRejecterRef = useRef<((reason: Error) => void) | null>(null);
-  const pendingStateRef = useRef<State | null>(null);
+  const pendingStateRef = useRef<Connect4State | null>(null);
   const startedRef = useRef(false);
   const prevModeRef = useRef(mode);
 
@@ -29,7 +28,7 @@ export default function App() {
     setLogs((prev) => [...prev, line]);
   }, []);
 
-  const requestHumanMove = useCallback(async (s: State): Promise<Move> => {
+  const requestHumanMove = useCallback(async (s: Connect4State): Promise<Connect4Move> => {
     setState(s);
     pendingStateRef.current = s;
     setFree(true);
@@ -52,10 +51,10 @@ export default function App() {
     setFree(false);
   }, []);
 
-  const wrapWithRenderer = useCallback((player: Player): Player => {
+  const wrapWithRenderer = useCallback((player: Player<Connect4State, Connect4Move>): Player<Connect4State, Connect4Move> => {
     return {
       ...player,
-      get_next_move: async (s: State) => {
+      get_next_move: async (s: Connect4State) => {
         setState(s);
         return await player.get_next_move(s);
       },
@@ -74,8 +73,8 @@ export default function App() {
     setLogs([]);
     log('Game started...');
 
-    let p1: Player;
-    let p2: Player;
+    let p1: Player<Connect4State, Connect4Move>;
+    let p2: Player<Connect4State, Connect4Move>;
 
     switch (mode) {
       case 'ai': {

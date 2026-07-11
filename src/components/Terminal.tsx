@@ -1,9 +1,9 @@
+import type { Connect4State } from '../games/connect4';
 import { connect4 } from '../games/connect4';
-import type { State } from '../algo/types';
 import './Terminal.scss';
 
 interface TerminalProps {
-  state: State | null;
+  state: Connect4State | null;
   logs: string[];
 }
 

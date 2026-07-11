@@ -1,5 +1,5 @@
 /**
- * Shared types and interfaces for the Connect4 game.
+ * Shared types and interfaces for generic two-player games.
  * Mirrors the original ReasonML Game and Player module signatures.
  */
 
@@ -11,38 +11,26 @@ export type Status =
   | { tag: 'Draw' }
   | { tag: 'Ongoing'; player: WhichPlayer };
 
-export type Place = 'Red' | 'Yellow' | 'None';
-
-export interface Move {
-  tag: 'Move';
-  col: number;
-}
-
 export interface CellCoord {
   col: number;
   row: number;
 }
 
-export interface State {
-  status: Status;
-  matrix: Place[][];
-}
-
-export interface Game {
+export interface Game<S, M> {
   str_player(player: WhichPlayer): string;
-  str_state(state: State): string;
-  str_move(move: Move): string;
+  str_state(state: S): string;
+  str_move(move: M): string;
 
-  init(dims: string): State;
-  get_legal_moves(state: State): Move[];
-  get_game_status(state: State): Status;
-  get_next_state(state: State, move: Move): State;
-  get_move(input: string, state: State): Move;
-  get_score(state: State): number;
+  init(dims: string): S;
+  get_legal_moves(state: S): M[];
+  get_game_status(state: S): Status;
+  get_next_state(state: S, move: M): S;
+  get_move(input: string, state: S): M;
+  get_score(state: S): number;
 }
 
-export interface Player {
-  game_ref: Game;
-  get_next_move(state: State): Move | Promise<Move>;
+export interface Player<S, M> {
+  game_ref: Game<S, M>;
+  get_next_move(state: S): M | Promise<M>;
   player_name: string;
 }

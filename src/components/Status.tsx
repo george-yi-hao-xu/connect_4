@@ -1,9 +1,9 @@
+import type { Connect4State } from '../games/connect4';
 import { connect4 } from '../games/connect4';
-import type { State } from '../algo/types';
 import './Status.scss';
 
 interface StatusProps {
-  state: State | null;
+  state: Connect4State | null;
 }
 
 export function Status({ state }: StatusProps) {

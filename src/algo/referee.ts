@@ -1,9 +1,14 @@
-import type { Game, Player, State } from './types';
+import type { Game, Player } from './types';
 import { write_ln } from './printer';
 
-export async function playGame(game: Game, player1: Player, player2: Player, dims = '5 6'): Promise<State> {
+export async function playGame<S, M>(
+  game: Game<S, M>,
+  player1: Player<S, M>,
+  player2: Player<S, M>,
+  dims = '5 6',
+): Promise<S> {
   // check the game status (win/draw/ongoing)
-  const loop_engine = async (state: State): Promise<State> => {
+  const loop_engine = async (state: S): Promise<S> => {
     write_ln(game.str_state(state));
 
     const status = game.get_game_status(state);

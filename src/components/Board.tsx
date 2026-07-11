@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { connect4, get_winning_cells } from '../games/connect4';
-import type { CellCoord, State, WhichPlayer } from '../algo/types';
+import { get_winning_cells } from '../games/connect4';
+import type { Connect4State } from '../games/connect4';
+import type { CellCoord, WhichPlayer } from '../algo/types';
 import { Arrow } from './Arrow';
 import { Cell } from './Cell';
 import './Board.scss';
 
 interface BoardProps {
-  state: State | null;
+  state: Connect4State | null;
   onColumnClick?: (col: number) => void;
   disabled?: boolean;
 }
@@ -19,7 +20,7 @@ const PLAYER_CLASS: Record<WhichPlayer, string> = {
 export function Board({ state, onColumnClick, disabled = false }: BoardProps) {
   const [hoveredCol, setHoveredCol] = useState<number | null>(null);
   const [droppingCells, setDroppingCells] = useState<CellCoord[]>([]);
-  const prevMatrixRef = useRef<State['matrix'] | null>(null);
+  const prevMatrixRef = useRef<Connect4State['matrix'] | null>(null);
 
   useEffect(() => {
     if (disabled) setHoveredCol(null);
