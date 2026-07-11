@@ -39,11 +39,12 @@ export function GomokuBoard({ state, onMove, disabled = false }: GomokuBoardProp
   const winningCells = state.status.tag === 'Win' ? get_winning_cells(state) : null;
 
   const isInteractive = isOngoing && !disabled;
+  const isWaiting = isOngoing && disabled;
 
   return (
     <section className="gomoku-board">
       <div
-        className={`gomoku-grid ${disabled ? 'disabled' : ''}`}
+        className={`gomoku-grid ${isWaiting ? 'waiting' : ''}`}
         onMouseLeave={() => setHoveredCell(null)}
       >
         {Array.from({ length: height }, (_, row) => (
