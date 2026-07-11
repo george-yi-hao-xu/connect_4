@@ -4,7 +4,9 @@ import { useGame } from './context/GameContext';
 import { useHumanPlayer } from './context/useHumanPlayer';
 import { useGameSession } from './context/useGameSession';
 
-import { GameUI } from './components/GameUI';
+import { Controls } from './components/Controls';
+import { Board } from './components/Board';
+import { Terminal } from './components/Terminal';
 
 export default function App() {
   const game = useGame<Connect4State, Connect4Move>();
@@ -13,14 +15,16 @@ export default function App() {
   const { state, logs, startGame } = useGameSession(game, human, mode);
 
   return (
-    <GameUI
-      mode={mode}
-      state={state}
-      logs={logs}
-      isInteractive={human.isAwaitingMove}
-      onModeChange={setMode}
-      onStart={startGame}
-      onMove={human.onMove}
-    />
+    <main>
+      <h1>Connect 4</h1>
+      <Controls
+        mode={mode}
+        onModeChange={setMode}
+        onStart={startGame}
+      />
+      {/* <Status state={state} /> */}
+      <Board state={state} onMove={human.onMove} disabled={!human.isAwaitingMove} />
+      <Terminal state={state} logs={logs} />
+    </main>
   );
 }
