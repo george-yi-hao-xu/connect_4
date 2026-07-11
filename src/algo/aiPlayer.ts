@@ -5,6 +5,7 @@ export function create_AI_player<S, M>(
   name: PlayerName,
   delay = 0,
   random = Math.random,
+  search_depth = 3,
 ): Player<S, M> {
   type MovePath = M[];
 
@@ -195,7 +196,7 @@ export function create_AI_player<S, M>(
   // ENTRY PT; minimax depth
   async function get_next_move(state: S): Promise<M> {
     await new Promise((resolve) => setTimeout(resolve, delay));
-    return min_i_max(state, 3);
+    return min_i_max(state, search_depth);
   }
 
   return {

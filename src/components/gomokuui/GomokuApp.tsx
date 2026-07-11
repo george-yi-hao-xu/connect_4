@@ -12,7 +12,7 @@ export function GomokuApp() {
   const game = useGame<GomokuState, GomokuMove>();
   const human = useHumanPlayer<GomokuState, GomokuMove>();
   const [mode, setMode] = useState('human-ai');
-  const { state, logs, startGame } = useGameSession(game, human, mode, '15 15');
+  const { state, logs, startGame } = useGameSession(game, human, mode, '15 15', 4);
 
   return (
     <>

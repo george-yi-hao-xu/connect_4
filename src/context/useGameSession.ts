@@ -16,6 +16,7 @@ export function useGameSession<S, M>(
   human: HumanPlayerControls<S, M>,
   mode: string,
   initialDims: string,
+  aiDepth = 3,
 ): GameSession<S, M> {
   const [state, setState] = useState<S | null>(() => game.init(initialDims));
   const [logs, setLogs] = useState<string[]>([]);
@@ -48,8 +49,8 @@ export function useGameSession<S, M>(
 
     switch (mode) {
       case 'ai': {
-        p1 = wrapWithRenderer(create_AI_player(game, 'MAX', 100));
-        p2 = wrapWithRenderer(create_AI_player(game, 'MIN', 50));
+        p1 = wrapWithRenderer(create_AI_player(game, 'MAX', 100, Math.random, aiDepth));
+        p2 = wrapWithRenderer(create_AI_player(game, 'MIN', 50, Math.random, aiDepth));
         break;
       }
       case 'human': {
@@ -60,7 +61,7 @@ export function useGameSession<S, M>(
       case 'human-ai':
       default: {
         p1 = wrapWithRenderer(create_web_human_player(game, 'MAX', human.requestMove));
-        p2 = wrapWithRenderer(create_AI_player(game, 'MIN', 400));
+        p2 = wrapWithRenderer(create_AI_player(game, 'MIN', 400, Math.random, aiDepth));
         break;
       }
     }
@@ -82,7 +83,7 @@ export function useGameSession<S, M>(
         log(`Error: ${message}`);
       }
     }
-  }, [game, human, log, mode, wrapWithRenderer]);
+  }, [aiDepth, game, human, log, mode, wrapWithRenderer]);
 
   useEffect(() => {
     if (startedRef.current) return;
