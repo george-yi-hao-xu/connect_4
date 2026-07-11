@@ -100,6 +100,17 @@ export function create_AI_player<S, M>(
     return score;
   }
 
+  function this_player_is_going_to_win(state: S): boolean {
+    const status = game.get_game_status(state);
+    if (status.tag !== 'Ongoing') return false;
+
+    return game.get_legal_moves(state).some((move) => {
+      const nextState = game.get_next_state(state, move);
+      const nextStatus = game.get_game_status(nextState);
+      return nextStatus.tag === 'Win' && nextStatus.player === status.player;
+    });
+  }
+
   /* minimax:
    * Input: s, depth;
    * Output: move. find the best move based on the state and the depth
@@ -152,8 +163,25 @@ export function create_AI_player<S, M>(
       }
     }
 
+    // DEFENCE
+    const safe_move_path_state_pairs = next_move_path_state_pairs.filter(
+      ([, next_s]) => !this_player_is_going_to_win(next_s),
+    );
+    if (
+      safe_move_path_state_pairs.length === 1 &&
+      safe_move_path_state_pairs.length < next_move_path_state_pairs.length
+    ) {
+      return safe_move_path_state_pairs[0][0][0];
+    }
+
+    const candidate_move_path_state_pairs =
+      safe_move_path_state_pairs.length > 0 &&
+      safe_move_path_state_pairs.length < next_move_path_state_pairs.length
+        ? safe_move_path_state_pairs
+        : next_move_path_state_pairs;
+
     const next_scores: [MovePath, number][] = [];
-    for (const [movePath, next_s] of next_move_path_state_pairs) {
+    for (const [movePath, next_s] of candidate_move_path_state_pairs) {
       const score = best_path_score_recur(next_s, depth - 1, -Infinity, Infinity);
       next_scores.push([movePath, score]);
     }

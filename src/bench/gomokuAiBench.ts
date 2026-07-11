@@ -87,7 +87,7 @@ async function main(): Promise<void> {
     {
       name: 'white must block',
       player: 'P2',
-      whites: [[7, 7], [8, 8], [6, 9], [9, 8]],
+      whites: [[6, 5], [7, 7], [8, 8], [9, 8]],
       blacks: [[6, 6], [6, 7], [6, 8], [6, 9]],
     },
     {
