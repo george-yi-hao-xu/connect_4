@@ -5,7 +5,7 @@ import { useHumanPlayer } from './context/useHumanPlayer';
 import { useGameSession } from './context/useGameSession';
 
 import { Controls } from './components/Controls';
-import { Board } from './components/Board';
+import { Connect4Board } from './components/connect4ui/Connect4Board';
 import { Terminal } from './components/Terminal';
 
 export default function App() {
@@ -23,7 +23,7 @@ export default function App() {
         onStart={startGame}
       />
       {/* <Status state={state} /> */}
-      <Board state={state} onMove={human.onMove} disabled={!human.isAwaitingMove} />
+      <Connect4Board state={state} onMove={human.onMove} disabled={!human.isAwaitingMove} />
       <Terminal state={state} logs={logs} />
     </main>
   );

@@ -25,19 +25,25 @@ export function create_AI_player<S, M>(
 
   /* lookUpMax:
    * Input: alop, a list of pairs, with type('a, float)
-   * Output: 'a, the item w/ largest float number
+   * Output: 'a, one of the items w/ largest float number, chosen uniformly at random
    */
-  function lookup_max<A>(pairs: [A, number][]): A {
+  function lookup_max<T>(pairs: [T, number][]): T {
     if (pairs.length === 0) throw new Error('Error: cannot lookUpMax in ');
-    let bestItem = pairs[0][0];
     let bestVal = pairs[0][1];
+    const bestItems: T[] = [];
+
     for (const [item, val] of pairs) {
       if (val > bestVal) {
-        bestItem = item;
         bestVal = val;
+        bestItems.length = 0; // clear
+        bestItems.push(item);
+      } else if (val === bestVal) {
+        bestItems.push(item);
       }
     }
-    return bestItem;
+
+    // if meet multi candidates, like no winning case or multi winning case, ran select one
+    return bestItems[Math.floor(Math.random() * bestItems.length)];
   }
 
   /* lookUpMin:

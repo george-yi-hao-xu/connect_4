@@ -1,4 +1,4 @@
-import type { Connect4Place } from '../games/connect4';
+import type { Connect4Place } from '../../games/connect4';
 import './Cell.scss';
 
 interface CellProps {

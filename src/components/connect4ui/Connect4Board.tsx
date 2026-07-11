@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { get_winning_cells } from '../games/connect4';
-import type { Connect4State, Connect4Move } from '../games/connect4';
-import { useGame } from '../context/GameContext';
-import type { CellCoord, WhichPlayer } from '../algo/types';
+import { get_winning_cells } from '../../games/connect4';
+import type { Connect4State, Connect4Move } from '../../games/connect4';
+import { useGame } from '../../context/GameContext';
+import type { CellCoord, WhichPlayer } from '../../algo/types';
 import { Arrow } from './Arrow';
 import { Cell } from './Cell';
 import './Board.scss';
@@ -18,7 +18,7 @@ const PLAYER_CLASS: Record<WhichPlayer, string> = {
   P2: 'yellow',
 };
 
-export function Board({ state, onMove, disabled = false }: BoardProps) {
+export function Connect4Board({ state, onMove, disabled = false }: BoardProps) {
   const game = useGame<Connect4State, Connect4Move>();
   const [hoveredCol, setHoveredCol] = useState<number | null>(null);
   const [droppingCells, setDroppingCells] = useState<CellCoord[]>([]);
