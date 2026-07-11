@@ -4,6 +4,7 @@ export function create_AI_player<S, M>(
   game: Game<S, M>,
   name: PlayerName,
   delay = 0,
+  random = Math.random,
 ): Player<S, M> {
   type MovePath = M[];
 
@@ -43,7 +44,7 @@ export function create_AI_player<S, M>(
     }
 
     // if meet multi candidates, like no winning case or multi winning case, ran select one
-    return bestItems[Math.floor(Math.random() * bestItems.length)];
+    return bestItems[Math.floor(random() * bestItems.length)];
   }
 
   /* lookUpMin:
@@ -70,9 +71,26 @@ export function create_AI_player<S, M>(
    * Output: list((movePath, state)). next step's move and the corresponding state
    */
   function get_all_next_move_path(state: S): [MovePath, S][] {
+    const status = game.get_game_status(state);
     const next_legal_moves = game.get_legal_moves(state).map(move => [move]);
     const next_states = next_legal_moves.map(movePath => game.get_next_state(state, movePath[0]));
-    return pair_to_lists(next_legal_moves, next_states);
+    const pairs = pair_to_lists(next_legal_moves, next_states);
+
+    if (status.tag !== 'Ongoing') return pairs;
+
+    // sort
+    return pairs
+      .map(([movePath, nextState]) => ({
+        movePath,
+        nextState,
+        score: game.get_score(nextState),
+      }))
+      .sort((a, b) =>
+        status.player === 'P1'
+          ? b.score - a.score
+          : a.score - b.score,
+      )
+      .map(({ movePath, nextState }) => [movePath, nextState]);
   }
 
   function score_finished_state(state: S, depth: number): number {
