@@ -35,26 +35,26 @@ interface StrategyRecord {
 
 const DEFAULT_DIMS = '5 6';
 const DEFAULT_DEPTH = 3;
-const DEFAULT_RUNS = 1;
+const DEFAULT_RUNS = 20;
 
 const CASES: Case[] = [
   {
-    name: 'balanced',
+    name: '---balanced',
     self: { chain3: 1.00, chain2: 0.50, chain1: 0.25 },
     opponent: { chain3: 1.00, chain2: 0.50, chain1: 0.25 },
   },
   {
-    name: 'aggressive',
+    name: '-aggressive',
     self: { chain3: 3.00, chain2: 0.80, chain1: 0.10 },
     opponent: { chain3: 0.80, chain2: 0.30, chain1: 0.05 },
   },
   {
-    name: 'defensive',
+    name: '--defensive',
     self: { chain3: 1.00, chain2: 0.45, chain1: 0.10 },
     opponent: { chain3: 3.00, chain2: 1.20, chain1: 0.20 },
   },
   {
-    name: 'builder',
+    name: '----builder',
     self: { chain3: 1.80, chain2: 1.00, chain1: 0.35 },
     opponent: { chain3: 1.50, chain2: 0.75, chain1: 0.15 },
   },
@@ -80,21 +80,9 @@ function is_legal_move(state: Connect4State, move: Connect4Move): boolean {
 }
 
 async function run_silent(red_strategy: Case, yellow_strategy: Case, seed: number, depth: number, dims: string): Promise<GameResult> {
-  const red_ai = create_AI_player(
-    create_strategy_game(red_strategy, 'P1'),
-    red_strategy.name,
-    0,
-    create_seeded_random(seed),
-    depth,
-  );
+  const red_ai = create_AI_player( create_strategy_game(red_strategy, 'P1'), red_strategy.name, 0, create_seeded_random(seed), depth,);
 
-  const yellow_ai = create_AI_player(
-    create_strategy_game(yellow_strategy, 'P2'),
-    yellow_strategy.name,
-    0,
-    create_seeded_random(seed + 1),
-    depth,
-  );
+  const yellow_ai = create_AI_player( create_strategy_game(yellow_strategy, 'P2'), yellow_strategy.name, 0, create_seeded_random(seed + 1), depth,);
 
   let state = connect4.init(dims);
   const max_possible_moves = state.matrix.length * state.matrix[0].length;
@@ -203,13 +191,13 @@ async function main(): Promise<void> {
     `Connect4 parameter benchmark, runs=${runs} depth=${depth} dims="${dims}"`,
     `timestamp=${new Date().toISOString()}`,
     '',
-    'Strategies:',
+    'Bench Cases:',
     ...CASES.map(
       (strategy) =>
         `  ${strategy.name}: self=${JSON.stringify(strategy.self)} opponent=${JSON.stringify(strategy.opponent)}`,
     ),
     '',
-    'Games:',
+    'Games Results:',
   ];
 
   for (let i = 0; i < CASES.length; i++) {
@@ -223,8 +211,8 @@ async function main(): Promise<void> {
         record_result(records, second);
 
         lines.push(
-          `  ${first.red} red vs ${first.yellow} yellow: ${first.winner_player} ${first.winner} in ${first.moves} moves`,
-          `  ${second.red} red vs ${second.yellow} yellow: ${second.winner_player} ${second.winner} in ${second.moves} moves`,
+          `  ${first.red} red vs ${first.yellow} yellow - WINNER: ${first.winner_player} ${first.winner} in ${first.moves} moves`,
+          `  ${second.red} red vs ${second.yellow} yellow - WINNER: ${second.winner_player} ${second.winner} in ${second.moves} moves`,
         );
       }
     }
