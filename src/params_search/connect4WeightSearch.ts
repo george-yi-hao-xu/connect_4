@@ -12,7 +12,7 @@ import { gen_seed, shuffle } from './randomUtils';
 import type { Candidate, CandidateRecord } from './connect4Search.types';
 
 const DEFAULT_POPULATION = 12;
-const DEFAULT_GENERATIONS = 5;
+const EPOCHS = 5;
 const DEFAULT_GAMES_PER_PAIR = 2;
 const DEFAULT_DEPTH = 3;
 const DEFAULT_BOARD_HEIGHT = 5;
@@ -46,7 +46,7 @@ interface GaParams {
 // 例子：npm run search:connect4 -- 16 10 2 3 5 6 0.8 0.2 100 2 3
 function parse_args(): GaParams {
   const population_size = Number(process.argv[2] ?? DEFAULT_POPULATION);
-  const generations = Number(process.argv[3] ?? DEFAULT_GENERATIONS);
+  const generations = Number(process.argv[3] ?? EPOCHS);
   const games_per_pair = Number(process.argv[4] ?? DEFAULT_GAMES_PER_PAIR);
   const depth = Number(process.argv[5] ?? DEFAULT_DEPTH);
   const board_height = Number(process.argv[6] ?? DEFAULT_BOARD_HEIGHT);
@@ -148,6 +148,8 @@ async function main(): Promise<void> {
   let population = create_candidates(params.population_size, DEFAULT_SEED);
   let best_ever: { candidate: Candidate; record: CandidateRecord } | null = null;
 
+  console.log('Starting Training...');
+
   const lines: string[] = [
     `Connect4 genetic weight search, population=${params.population_size} generations=${params.generations} gamesPerPair=${params.games_per_pair} depth=${params.depth} dims="${params.dims}"`,
     `crossover_rate=${params.crossover_rate} mutation_rate=${params.mutation_rate} mutation_strength=${params.mutation_strength} elite_count=${params.elite_count} tournament_size=${params.tournament_size}`,
@@ -158,6 +160,7 @@ async function main(): Promise<void> {
   ];
 
   for (let generation = 0; generation < params.generations; generation++) {
+    console.log(`Training generation ${generation + 1}/${params.generations}...`);
     const records = await evaluate_population(
       population,
       params.games_per_pair,
