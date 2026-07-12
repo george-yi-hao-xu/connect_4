@@ -1,15 +1,17 @@
+import * as os from 'node:os';
+import * as path from 'node:path';
+import { Worker } from 'node:worker_threads';
 import { write_bench_log } from '../bench/benchUtils';
 import { create_candidates } from './connect4Candidates';
 import {
   create_match_jobs,
   create_records,
   format_candidate,
-  play_silent_game,
   record_result,
 } from './connect4Tournament';
 import { crossover, mutate, tournament_select } from './connect4Genetic';
 import { gen_seed, shuffle } from './randomUtils';
-import type { Candidate, CandidateRecord } from './connect4Search.types';
+import type { Candidate, CandidateRecord, GameResult, MatchJob } from './connect4Search.types';
 
 const DEFAULT_POPULATION = 20;
 const EPOCHS = 5;
@@ -28,6 +30,17 @@ const DEFAULT_MUTATION_RATE = 0.2;
 const DEFAULT_MUTATION_STRENGTH = 50;
 const DEFAULT_ELITE_COUNT = 2;
 const DEFAULT_TOURNAMENT_SIZE = 3;
+
+function format_duration(ms: number): string {
+  const seconds = Math.floor(ms / 1000) % 60;
+  const minutes = Math.floor(ms / 1000 / 60) % 60;
+  const hours = Math.floor(ms / 1000 / 60 / 60);
+  const parts: string[] = [];
+  if (hours > 0) parts.push(`${hours}h`);
+  if (minutes > 0) parts.push(`${minutes}m`);
+  parts.push(`${seconds}s`);
+  return parts.join(' ');
+}
 
 interface GaParams {
   population_size: number;
@@ -72,6 +85,68 @@ function parse_args(): GaParams {
   };
 }
 
+// 用 worker 线程池并行跑所有对局，返回实际创建的 worker 数量
+function run_jobs_with_workers( jobs: MatchJob[], records: Map<string, CandidateRecord>, depth: number, dims: string,): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const worker_count = Math.min( os.availableParallelism?.() ?? os.cpus().length, jobs.length,);
+    const workers: Worker[] = [];
+    let completed = 0;
+    let job_index = 0;
+    let has_error = false;
+
+    function cleanup() {
+      for (const worker of workers) {
+        worker.terminate().catch(() => {});
+      }
+    }
+
+    function send_next_job(worker: Worker) {
+      if (job_index < jobs.length) {
+        worker.postMessage({ type: 'run', job: jobs[job_index], depth, dims });
+        job_index++;
+      }
+    }
+
+    for (let i = 0; i < worker_count; i++) {
+      const worker = new Worker(path.join(__dirname, 'connect4GameWorker.js'));
+
+      worker.on('message', (message) => {
+        if (message.type === 'result') {
+          const result = message.result as GameResult;
+          record_result(records, result, ELO_K);
+          completed++;
+          process.stdout.write(`\rCompleted ${completed}/${jobs.length} games`);
+          send_next_job(worker);
+
+          if (completed === jobs.length) {
+            cleanup();
+            resolve(worker_count);
+          }
+        }
+      });
+
+      worker.on('error', (err) => {
+        if (!has_error) {
+          has_error = true;
+          cleanup();
+          reject(err);
+        }
+      });
+
+      worker.on('exit', (code) => {
+        if (code !== 0 && !has_error) {
+          has_error = true;
+          cleanup();
+          reject(new Error(`Worker stopped with exit code ${code}`));
+        }
+      });
+
+      workers.push(worker);
+      send_next_job(worker);
+    }
+  });
+}
+
 // 让种群两两对战，返回每个人的 Elo 记录
 async function evaluate_population(
   population: Candidate[],
@@ -79,22 +154,17 @@ async function evaluate_population(
   depth: number,
   dims: string,
   seed: number,
+  stats?: { worker_count?: number },
 ): Promise<Map<string, CandidateRecord>> {
   const records = create_records(population, INITIAL_ELO);
   const jobs = shuffle(
     create_match_jobs(population, games_per_pair, seed),
     gen_seed(seed + 1),
   );
-  const total = jobs.length;
 
-  for (let i = 0; i < jobs.length; i++) {
-    const job = jobs[i];
-    const result = await play_silent_game(job.red, job.yellow, job.seed, depth, dims);
-    record_result(records, result, ELO_K);
-    process.stdout.write(`\rCompleted ${i + 1}/${total} games`);
-  }
-
-  if (total > 0) {
+  if (jobs.length > 0) {
+    const worker_count = await run_jobs_with_workers(jobs, records, depth, dims);
+    if (stats) stats.worker_count = worker_count;
     process.stdout.write('\n');
   }
 
@@ -157,6 +227,8 @@ async function main(): Promise<void> {
   let best_ever: { candidate: Candidate; record: CandidateRecord } | null = null;
 
   console.log('Starting Training...');
+  const start_time = Date.now();
+  const stats = { worker_count: 0 };
 
   const lines: string[] = [
     `Connect4 genetic weight search, population=${params.population_size} generations=${params.generations} gamesPerPair=${params.games_per_pair} depth=${params.depth} dims="${params.dims}"`,
@@ -175,6 +247,7 @@ async function main(): Promise<void> {
       params.depth,
       params.dims,
       DEFAULT_SEED + generation,
+      stats,
     );
     const ranked = rank_population(population, records);
 
@@ -193,6 +266,8 @@ async function main(): Promise<void> {
     }
   }
 
+  lines.push(`workers=${stats.worker_count}`);
+
   // 最后再完整评估一次最终种群，输出排名
   const final_records = await evaluate_population(
     population,
@@ -200,6 +275,7 @@ async function main(): Promise<void> {
     params.depth,
     params.dims,
     DEFAULT_SEED + params.generations,
+    stats,
   );
   const final_ranked = rank_population(population, final_records);
 
@@ -213,6 +289,10 @@ async function main(): Promise<void> {
     lines.push('', 'Best candidate ever seen:');
     lines.push(`  ${format_candidate(best_ever.candidate, best_ever.record)}`);
   }
+
+  const elapsed_ms = Date.now() - start_time;
+  const elapsed_str = format_duration(elapsed_ms);
+  lines.push('', `total_time=${elapsed_str}`);
 
   const log_path = write_bench_log('connect4-genetic-search', lines);
   console.log([...lines, '', `log=${log_path}`].join('\n'));
