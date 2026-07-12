@@ -27,13 +27,11 @@ export function create_candidates(count: number, seed: number): Candidate[] {
 
   return Array.from({ length: count }, (_, index) => ({
     name: `w${String(index + 1).padStart(3, '0')}`,
-    self: get_rand_weights(_r),
-    opponent: get_rand_weights(_r),
+    weights: get_rand_weights(_r),
   }));
 }
 
-export function create_candidate_game(candidate: Candidate, player: WhichPlayer) {
-  return player === 'P1'
-    ? create_connect4({ red: candidate.self, yellow: candidate.opponent })
-    : create_connect4({ red: candidate.opponent, yellow: candidate.self });
+export function create_candidate_game(candidate: Candidate, _player: WhichPlayer) {
+  // 对称评估：红方和黄方使用同一组权重
+  return create_connect4({ red: candidate.weights, yellow: candidate.weights });
 }

@@ -11,8 +11,9 @@ import { crossover, mutate, tournament_select } from './connect4Genetic';
 import { gen_seed, shuffle } from './randomUtils';
 import type { Candidate, CandidateRecord } from './connect4Search.types';
 
-const DEFAULT_POPULATION = 12;
+const DEFAULT_POPULATION = 20;
 const EPOCHS = 5;
+
 const DEFAULT_GAMES_PER_PAIR = 2;
 const DEFAULT_DEPTH = 3;
 const DEFAULT_BOARD_HEIGHT = 5;
@@ -24,7 +25,7 @@ const ELO_K = 32;
 // GA 默认超参数
 const DEFAULT_CROSSOVER_RATE = 0.8;
 const DEFAULT_MUTATION_RATE = 0.2;
-const DEFAULT_MUTATION_STRENGTH = 100;
+const DEFAULT_MUTATION_STRENGTH = 50;
 const DEFAULT_ELITE_COUNT = 2;
 const DEFAULT_TOURNAMENT_SIZE = 3;
 
@@ -84,10 +85,17 @@ async function evaluate_population(
     create_match_jobs(population, games_per_pair, seed),
     gen_seed(seed + 1),
   );
+  const total = jobs.length;
 
-  for (const job of jobs) {
+  for (let i = 0; i < jobs.length; i++) {
+    const job = jobs[i];
     const result = await play_silent_game(job.red, job.yellow, job.seed, depth, dims);
     record_result(records, result, ELO_K);
+    process.stdout.write(`\rCompleted ${i + 1}/${total} games`);
+  }
+
+  if (total > 0) {
+    process.stdout.write('\n');
   }
 
   return records;

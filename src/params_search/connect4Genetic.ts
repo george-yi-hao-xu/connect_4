@@ -1,38 +1,27 @@
 import type { Candidate, CandidateRecord } from './connect4Search.types';
 
-// 把 Candidate 展平成 6 个数字的“基因数组”
-// 顺序：[self.w1, self.w2, self.w3, opponent.w1, opponent.w2, opponent.w3]
+// 把 Candidate 展平成 3 个数字的“基因数组”
+// 顺序：[w1, w2, w3]
 export function flatten_weights(candidate: Candidate): number[] {
   return [
-    candidate.self.chain1,
-    candidate.self.chain2,
-    candidate.self.chain3,
-    candidate.opponent.chain1,
-    candidate.opponent.chain2,
-    candidate.opponent.chain3,
+    candidate.weights.chain1,
+    candidate.weights.chain2,
+    candidate.weights.chain3,
   ];
 }
 
 // 把基因数组还原成 Candidate，并强制 w1 <= w2 <= w3，且落在 [0, 1000]
 export function unflatten_weights(values: number[], name: string): Candidate {
-  const self = [values[0], values[1], values[2]]
-    .map((v) => _clamp(v, 0, 1000))
-    .sort((a, b) => a - b);
-  const opponent = [values[3], values[4], values[5]]
+  const sorted = [values[0], values[1], values[2]]
     .map((v) => _clamp(v, 0, 1000))
     .sort((a, b) => a - b);
 
   return {
     name,
-    self: {
-      chain1: _round(self[0]),
-      chain2: _round(self[1]),
-      chain3: _round(self[2]),
-    },
-    opponent: {
-      chain1: _round(opponent[0]),
-      chain2: _round(opponent[1]),
-      chain3: _round(opponent[2]),
+    weights: {
+      chain1: _round(sorted[0]),
+      chain2: _round(sorted[1]),
+      chain3: _round(sorted[2]),
     },
   };
 }

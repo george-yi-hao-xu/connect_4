@@ -130,7 +130,6 @@ export function format_candidate(candidate: Candidate, record: CandidateRecord):
     `draws=${record.draws}`,
     `win_rate=${win_rate.toFixed(1)}%`,
     `avg_moves=${avg_moves.toFixed(1)}`,
-    `self=${JSON.stringify(candidate.self)}`,
-    `opponent=${JSON.stringify(candidate.opponent)}`,
+    `weights=${JSON.stringify(candidate.weights)}`,
   ].join(' ');
 }

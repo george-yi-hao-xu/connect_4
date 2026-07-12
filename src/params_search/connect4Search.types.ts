@@ -3,8 +3,7 @@ import type { Connect4ChainWeights } from '../games/connect4';
 
 export interface Candidate {
   name: string;
-  self: Connect4ChainWeights;
-  opponent: Connect4ChainWeights;
+  weights: Connect4ChainWeights;
 }
 
 export interface CandidateRecord {
