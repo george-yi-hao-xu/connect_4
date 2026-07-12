@@ -17,6 +17,38 @@ export interface Connect4Move {
   col: number;
 }
 
+export interface Connect4ChainWeights {
+  chain3: number;
+  chain2: number;
+  chain1: number;
+}
+
+export interface Connect4ScoreWeights {
+  win: number;
+  red: Connect4ChainWeights;
+  yellow: Connect4ChainWeights;
+}
+
+export type Connect4ScoreWeightParams = Partial<{
+  win: number;
+  red: Partial<Connect4ChainWeights>;
+  yellow: Partial<Connect4ChainWeights>;
+}>;
+
+export const default_connect4_score_weights: Connect4ScoreWeights = {
+  win: 1000,
+  red: {
+    chain3: 1.00,
+    chain2: 0.50,
+    chain1: 0.25,
+  },
+  yellow: {
+    chain3: 1.00,
+    chain2: 0.50,
+    chain1: 0.25,
+  },
+};
+
 /* stringOfPlace:
  * Input: place, Red or Yellow or None
  * Output: corresponding string of each place
@@ -416,8 +448,25 @@ function get_move(input: string, state: Connect4State): Connect4Move {
   throw new Error('error: illegal move');
 }
 
+function resolve_connect4_score_weights(params: Connect4ScoreWeightParams = {}): Connect4ScoreWeights {
+  return {
+    win: params.win ?? default_connect4_score_weights.win,
+    red: {
+      ...default_connect4_score_weights.red,
+      ...params.red,
+    },
+    yellow: {
+      ...default_connect4_score_weights.yellow,
+      ...params.yellow,
+    },
+  };
+}
+
 // JUDGE the state and give back score
-function get_score(state: Connect4State): number {
+function get_score(
+  state: Connect4State,
+  weights: Connect4ScoreWeights = default_connect4_score_weights,
+): number {
   const matrix = state.matrix;
 
   const is_p1_win = check_chain(matrix, 'P1', 4);
@@ -437,25 +486,25 @@ function get_score(state: Connect4State): number {
   // win/lose
   if (is_p1_win) {
     // max player wins
-    const score = 1000;
+    const score = weights.win;
     debug_log("Find win case: " + score)
     return score;
   }
   else if (is_p2_win) {
     // min player wins
-    const score = -1000;
+    const score = -weights.win;
     debug_log("Find win case for MIN: " + score)
     return score
   } else {
   // ongoing
     const p1_chain_score = 
-        1.00 * count_open_chain(matrix, 'Red', 3) +
-        0.50 * count_open_chain(matrix, 'Red', 2) +
-        0.25 * count_open_chain(matrix, 'Red', 1)
+        weights.red.chain3 * count_open_chain(matrix, 'Red', 3) +
+        weights.red.chain2 * count_open_chain(matrix, 'Red', 2) +
+        weights.red.chain1 * count_open_chain(matrix, 'Red', 1)
     const p2_chain_score = -1 * (
-        1.00 * count_open_chain(matrix, 'Yellow', 3) +
-        0.50 * count_open_chain(matrix, 'Yellow', 2) +
-        0.25 * count_open_chain(matrix, 'Yellow', 1)
+        weights.yellow.chain3 * count_open_chain(matrix, 'Yellow', 3) +
+        weights.yellow.chain2 * count_open_chain(matrix, 'Yellow', 2) +
+        weights.yellow.chain1 * count_open_chain(matrix, 'Yellow', 1)
     )
     const score = p1_chain_score + p2_chain_score
     debug_log("Not finished and score is " + score)
@@ -463,16 +512,24 @@ function get_score(state: Connect4State): number {
   }
 }
 
-export const connect4: Game<Connect4State, Connect4Move> = {
-  str_player,
-  str_state,
-  str_move,
-  init,
-  get_legal_moves,
-  get_game_status,
-  get_next_state,
-  get_move,
-  get_score,
-};
+export function create_connect4(
+  score_weight_params: Connect4ScoreWeightParams = {},
+): Game<Connect4State, Connect4Move> {
+  const score_weights = resolve_connect4_score_weights(score_weight_params);
+
+  return {
+    str_player,
+    str_state,
+    str_move,
+    init,
+    get_legal_moves,
+    get_game_status,
+    get_next_state,
+    get_move,
+    get_score: (state) => get_score(state, score_weights),
+  };
+}
+
+export const connect4: Game<Connect4State, Connect4Move> = create_connect4();
 
 export default connect4;

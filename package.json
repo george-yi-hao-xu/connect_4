@@ -8,6 +8,8 @@
     "start": "tsc && node dist/index.js",
     "local:dev": "tsc && node dist/index.js human-ai",
     "bench:ai": "tsc && node dist/bench/gomokuAiBench.js",
+    "bench:connect4": "tsc && node dist/bench/connect4ParamBench.js",
+    "search:connect4": "tsc && node dist/params_search/connect4WeightSearch.js",
     "dev:web": "vite",
     "build:web": "vite build",
     "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\""
