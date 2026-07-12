@@ -17,11 +17,7 @@ export function Connect4App() {
   return (
     <>
       <h1>Connect 4</h1>
-      <Controls
-        mode={mode}
-        onModeChange={setMode}
-        onStart={startGame}
-      />
+      <Controls mode={mode} onModeChange={setMode} onStart={startGame} />
       <Connect4Board state={state} onMove={human.onMove} disabled={!human.isAwaitingMove} />
       <Terminal<Connect4State, Connect4Move> state={state} logs={logs} />
     </>
