@@ -1,15 +1,15 @@
 import * as path from 'node:path';
-import { connect4_adapter } from './adapters/connect4Adapter';
+import type { GomokuScoreWeights } from '../games/gomoku';
+import { gomoku_adapter } from './adapters/gomokuAdapter';
 import { run_genetic_search, type GeneticSearchOptions } from './core/search';
-import type { Connect4ChainWeights } from '../games/connect4';
 
 const DEFAULT_POPULATION = 20;
 const EPOCHS = 5;
 
 const DEFAULT_GAMES_PER_PAIR = 2;
-const DEFAULT_DEPTH = 3;
-const DEFAULT_BOARD_HEIGHT = 5;
-const DEFAULT_BOARD_WIDTH = 6;
+const DEFAULT_DEPTH = 2;
+const DEFAULT_BOARD_HEIGHT = 15;
+const DEFAULT_BOARD_WIDTH = 15;
 const DEFAULT_SEED = 20260712;
 const INITIAL_ELO = 1000;
 const ELO_K = 32;
@@ -23,8 +23,8 @@ const DEFAULT_TOURNAMENT_SIZE = 3;
 // CLI args:
 //   population generations gamesPerPair depth boardHeight boardWidth crossoverRate mutationRate mutationStrength eliteCount tournamentSize
 // Example:
-//   npm run search:connect4 -- 16 10 2 3 5 6 0.8 0.2 100 2 3
-function parse_args(): GeneticSearchOptions<Connect4ChainWeights> {
+//   npm run search:gomoku -- 16 10 1 2 15 15 0.8 0.2 100 2 3
+function parse_args(): GeneticSearchOptions<GomokuScoreWeights> {
   const population_size = Number(process.argv[2] ?? DEFAULT_POPULATION);
   const generations = Number(process.argv[3] ?? EPOCHS);
   const games_per_pair = Number(process.argv[4] ?? DEFAULT_GAMES_PER_PAIR);
@@ -38,7 +38,7 @@ function parse_args(): GeneticSearchOptions<Connect4ChainWeights> {
   const tournament_size = Number(process.argv[12] ?? DEFAULT_TOURNAMENT_SIZE);
 
   return {
-    adapter: connect4_adapter,
+    adapter: gomoku_adapter,
     population_size,
     generations,
     games_per_pair,
@@ -50,9 +50,9 @@ function parse_args(): GeneticSearchOptions<Connect4ChainWeights> {
     mutation_strength,
     elite_count,
     tournament_size,
-    log_prefix: 'connect4-genetic-search',
-    game_name: 'connect4',
-    worker_script_path: path.join(__dirname, 'worker', 'connect4GameWorker.js'),
+    log_prefix: 'gomoku-genetic-search',
+    game_name: 'gomoku',
+    worker_script_path: path.join(__dirname, 'worker', 'gomokuGameWorker.js'),
     elo_k: ELO_K,
     initial_elo: INITIAL_ELO,
   };

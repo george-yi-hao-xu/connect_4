@@ -14,6 +14,26 @@ export interface GomokuMove {
   col: number;
 }
 
+export interface GomokuScoreWeights {
+  win: number;
+  len4_open1: number;
+  len3_open2: number;
+  len3_open1: number;
+  len2_open2: number;
+  len2_open1: number;
+}
+
+export type GomokuScoreWeightParams = Partial<GomokuScoreWeights>;
+
+export const default_gomoku_score_weights: GomokuScoreWeights = {
+  win: 1000,
+  len4_open1: 1,
+  len3_open2: 0.75,
+  len3_open1: 0.5,
+  len2_open2: 0.1,
+  len2_open1: 0.05,
+};
+
 const DIRECTIONS = [
   { dc: 1, dr: 0 },  // horizontal
   { dc: 0, dr: 1 },  // vertical
@@ -367,7 +387,10 @@ function collect_chain_stats(board: GomokuPlace[][]): ChainStats {
   return stats;
 }
 
-function get_score(state: GomokuState): number {
+function get_score(
+  state: GomokuState,
+  weights: GomokuScoreWeights = default_gomoku_score_weights,
+): number {
   const board = state.matrix;
   const chain_stats = collect_chain_stats(board);
 
@@ -381,46 +404,67 @@ function get_score(state: GomokuState): number {
   }
 
   if (chain_stats.black_win) {
-    const score = 1000;
+    const score = weights.win;
     debug_log('Find win case: ' + score);
     return score;
   }
 
   if (chain_stats.white_win) {
-    const score = -1000;
+    const score = -weights.win;
     debug_log('Find win case for MIN: ' + score);
     return score;
   }
 
   const p1_score =
-    1 * chain_stats.black_len4_open1 +
-    0.75 * chain_stats.black_len3_open2 +
-    0.5 * chain_stats.black_len3_open1 +
-    0.1 * chain_stats.black_len2_open2 +
-    0.05 * chain_stats.black_len2_open1;
+    weights.len4_open1 * chain_stats.black_len4_open1 +
+    weights.len3_open2 * chain_stats.black_len3_open2 +
+    weights.len3_open1 * chain_stats.black_len3_open1 +
+    weights.len2_open2 * chain_stats.black_len2_open2 +
+    weights.len2_open1 * chain_stats.black_len2_open1;
 
   const p2_score =
-    1 * chain_stats.white_len4_open1 +
-    0.75 * chain_stats.white_len3_open2 +
-    0.5 * chain_stats.white_len3_open1 +
-    0.1 * chain_stats.white_len2_open2 +
-    0.05 * chain_stats.white_len2_open1;
+    weights.len4_open1 * chain_stats.white_len4_open1 +
+    weights.len3_open2 * chain_stats.white_len3_open2 +
+    weights.len3_open1 * chain_stats.white_len3_open1 +
+    weights.len2_open2 * chain_stats.white_len2_open2 +
+    weights.len2_open1 * chain_stats.white_len2_open1;
 
   const score = p1_score - p2_score;
   // debug_log('Not finished and score is ' + score);
   return score;
 }
 
-export const gomoku: Game<GomokuState, GomokuMove> = {
-  str_player,
-  str_state,
-  str_move,
-  init,
-  get_legal_moves,
-  get_game_status,
-  get_next_state,
-  get_move,
-  get_score,
-};
+function resolve_gomoku_score_weights(
+  params: GomokuScoreWeightParams = {},
+): GomokuScoreWeights {
+  return {
+    win: params.win ?? default_gomoku_score_weights.win,
+    len4_open1: params.len4_open1 ?? default_gomoku_score_weights.len4_open1,
+    len3_open2: params.len3_open2 ?? default_gomoku_score_weights.len3_open2,
+    len3_open1: params.len3_open1 ?? default_gomoku_score_weights.len3_open1,
+    len2_open2: params.len2_open2 ?? default_gomoku_score_weights.len2_open2,
+    len2_open1: params.len2_open1 ?? default_gomoku_score_weights.len2_open1,
+  };
+}
+
+export function create_gomoku(
+  score_weight_params: GomokuScoreWeightParams = {},
+): Game<GomokuState, GomokuMove> {
+  const score_weights = resolve_gomoku_score_weights(score_weight_params);
+
+  return {
+    str_player,
+    str_state,
+    str_move,
+    init,
+    get_legal_moves,
+    get_game_status,
+    get_next_state,
+    get_move,
+    get_score: (state) => get_score(state, score_weights),
+  };
+}
+
+export const gomoku: Game<GomokuState, GomokuMove> = create_gomoku();
 
 export default gomoku;
